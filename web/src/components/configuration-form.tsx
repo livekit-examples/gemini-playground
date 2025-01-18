@@ -69,7 +69,7 @@ export function ConfigurationForm() {
     const onlyVoiceChanged = Object.keys(attributes).every(
       (key) =>
         key === "voice" ||
-        attributes[key] === (localParticipant.attributes[key] as string),
+        attributes[key] === (localParticipant.attributes[key] as string)
     );
 
     // If only voice changed, or if there were no existing attributes, don't update or show toast
@@ -145,12 +145,12 @@ export function ConfigurationForm() {
     <Form {...form}>
       <form className="h-full">
         <div className="flex flex-col h-full">
-          <div className="flex-shrink-0 p-4">
+          <div className="flex-shrink-0 py-4">
             <div className="text-xs font-semibold uppercase tracking-widest">
               Configuration
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto p-4 pt-0">
+          <div className="flex-grow overflow-y-auto py-4 pt-0">
             <div className="space-y-4">
               <SessionConfig form={form} />
 

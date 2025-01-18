@@ -15,14 +15,14 @@ export async function generateMetadata({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }): Promise<Metadata> {
-  let title = "Realtime Playground";
+  let title = "LiveKit | Gemini Realtime Playground";
   let description =
     "Speech-to-speech playground for OpenAI's new Realtime API. Built on LiveKit Agents.";
 
   const presetId = searchParams?.preset;
   if (presetId) {
     const selectedPreset = defaultPresets.find(
-      (preset) => preset.id === presetId,
+      (preset) => preset.id === presetId
     );
     if (selectedPreset) {
       title = `Realtime Playground`;
@@ -57,9 +57,11 @@ export default function Dashboard() {
       <header className="flex flex-shrink-0 h-12 items-center justify-between px-4 py-8 w-full md:mx-auto">
         <div className="flex items-center gap-2">
           <LK />
-          <span>×</span>
+          <span className="h-8 border-r border-white/10"></span>
           <Gemini />
-          <span>Realtime Playground</span>
+          <span className="text-[18px] pt-[3px] font-light">
+            Realtime Playground
+          </span>
         </div>
         <div className="inline-flex flex-row items-center space-x-2">
           <PresetSelector />

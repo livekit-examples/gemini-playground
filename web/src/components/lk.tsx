@@ -6,11 +6,11 @@ export default function LK() {
   return (
     <a
       href="https://livekit.io"
-      className="hover:opacity-70 transition-all duration-250"
+      className="hover:opacity-70 transition-all duration-250 text-white"
       target="_blank"
       rel="noopener noreferrer"
     >
-      <Logo height="18" />
+      <Logo />
     </a>
   );
 }

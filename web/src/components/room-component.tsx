@@ -27,7 +27,7 @@ export function RoomComponent() {
       }}
     >
       <AgentProvider>
-        <div className="hidden lg:block h-full overflow-y-auto relative">
+        <div className="hidden lg:block h-full overflow-y-auto relative pr-4">
           <ConfigurationForm />
         </div>
         <div className="w-full flex flex-col h-full mx-auto rounded-2xl bg-neutral-800">
