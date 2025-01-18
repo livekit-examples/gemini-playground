@@ -157,14 +157,14 @@ export function ConfigurationForm() {
               {pgState.sessionConfig.voice !== voice &&
                 ConnectionState.Connected === connectionState && (
                   <div className="flex flex-col">
-                    <div className="text-xs bg-neutral-100 py-2 px-2 my-2 rounded-md">
+                    <div className="text-xs my-2">
                       Your change to the voice parameter requires a reconnect.
                     </div>
                     <div className="flex w-full">
                       <Button
                         className="flex-1"
                         type="button"
-                        variant="outline"
+                        variant="primary"
                         onClick={() => {
                           disconnect().then(() => {
                             connect();

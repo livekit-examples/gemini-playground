@@ -72,7 +72,7 @@ export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
             className="w-[260px] text-sm"
             side="bottom"
           >
-            Use the new realtime version of GPT-4o
+            Use the new realtime version of Gemini
           </HoverCardContent>
         </HoverCard>
       )}
