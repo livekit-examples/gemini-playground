@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 
 import {
   TrackToggle,
+  BarVisualizer,
   useLocalParticipant,
   useMediaDeviceSelect,
 } from "@livekit/components-react";
@@ -21,18 +22,12 @@ import { useKrispNoiseFilter } from "@livekit/components-react/krisp";
 import { Track } from "livekit-client";
 
 import { useConnection } from "@/hooks/use-connection";
-import { useMultibandTrackVolume } from "@/hooks/use-multiband-track-volume";
-import { MultibandAudioVisualizer } from "./agent/visualizers/multiband-bar-visualizer";
 
 export function SessionControls() {
   const localParticipant = useLocalParticipant();
   const deviceSelect = useMediaDeviceSelect({ kind: "audioinput" });
   const { disconnect } = useConnection();
 
-  const localMultibandVolume = useMultibandTrackVolume(
-    localParticipant.microphoneTrack?.track,
-    9
-  );
   const [isMuted, setIsMuted] = useState(localParticipant.isMicrophoneEnabled);
   const { isNoiseFilterEnabled, isNoiseFilterPending, setNoiseFilterEnabled } =
     useKrispNoiseFilter();
@@ -46,28 +41,30 @@ export function SessionControls() {
   return (
     <div className="flex flex-row gap-2">
       <div className="flex items-center rounded-md bg-neutral-900 text-secondary-foreground">
-        <div className="flex gap-1 pr-4">
+        <div className="flex items-center gap-2">
           <TrackToggle
             source={Track.Source.Microphone}
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80 h-9 py-2 px-3 shadow-none${isMuted ? " opacity-50" : ""
-              }`}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 bg-neutral-500 text-neutral-900 hover:!bg-neutral-800/80 hover:!rounded-l-md h-9 shadow-none !px-3 !border-r-[1px] !border-neutral-800`}
+            style={{ borderRightStyle: "solid" }}
             showIcon={false}
           >
             {isMuted ? (
-              <MicOff className="text-black h-4 w-4" />
+              <MicOff className="text-neutral-500 h-4 w-4" />
             ) : (
-              <Mic className="text-black h-4 w-4" />
+              <Mic className="text-neutral-500 h-4 w-4" />
             )}
           </TrackToggle>
-          <MultibandAudioVisualizer
+          <BarVisualizer
+            className="!h-6 pl-2 pr-4"
             state="speaking"
-            barWidth={2}
-            minBarHeight={2}
-            maxBarHeight={16}
-            frequencies={localMultibandVolume}
-            borderRadius={5}
-            gap={2}
-          />
+            barCount={7}
+            trackRef={{
+              participant: localParticipant.localParticipant,
+              publication: localParticipant.microphoneTrack,
+              source: Track.Source.Microphone,
+            }}
+          >
+          </BarVisualizer>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
