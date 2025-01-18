@@ -55,13 +55,15 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col h-full bg-neutral-900">
       <header className="flex flex-shrink-0 h-12 items-center justify-between px-4 py-8 w-full md:mx-auto">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <LK />
           <span className="h-8 border-r border-white/10"></span>
-          <Gemini />
-          <span className="text-[18px] pt-[3px] font-light">
-            Realtime Playground
-          </span>
+          <div className="flex gap-2 items-center">
+            <Gemini />
+            <span className="text-[18px] pt-[3px] font-light">
+              Realtime Playground
+            </span>
+          </div>
         </div>
         <div className="inline-flex flex-row items-center space-x-2">
           <PresetSelector />
