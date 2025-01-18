@@ -15,11 +15,7 @@ export async function generateMetadata({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }): Promise<Metadata> {
-<<<<<<< HEAD
   let title = "LiveKit | Gemini Multimodal Playground";
-=======
-  let title = "LiveKit | Gemini Realtime Playground";
->>>>>>> 49ebd31 (Clean up playground header / padding / etc.)
   let description =
     "Speech-to-speech playground for Google's new Gemini Multimodal Live API. Built on LiveKit Agents.";
 
@@ -58,14 +54,16 @@ export async function generateMetadata({
 export default function Dashboard() {
   return (
     <div className="flex flex-col h-full bg-neutral-900">
-      <header className="flex flex-col md:flex-row flex-shrink-0 gap-3 md:h-12 items-center justify-between px-4 py-8 w-full md:mx-auto">
+      <header className="flex flex-shrink-0 h-12 items-center justify-between px-4 py-8 w-full md:mx-auto">
         <div className="flex items-center gap-3">
           <LK />
           <span className="h-8 border-r border-white/10"></span>
-          <Gemini />
-          <span className="text-[18px] pt-[3px] font-light">
-            Realtime Playground
-          </span>
+          <div className="flex gap-2 items-center">
+            <Gemini />
+            <span className="text-[18px] pt-[3px] font-light">
+              Realtime Playground
+            </span>
+          </div>
         </div>
         <div className="inline-flex flex-row items-center space-x-2">
           <PresetSelector />
