@@ -17,9 +17,7 @@ export function Instructions() {
 
   return (
     <div
-      className={`flex flex-1 flex-col w-full gap-[4px] border p-4 rounded-lg ${
-        isFocused ? "ring-1" : "ring-0"
-      } h-[200px] overflow-y-auto`}
+      className={`flex flex-1 flex-col w-full gap-[4px] text-neutral-300 bg-neutral-700 shadow-md p-4 rounded-lg overflow-y-auto`}
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center">
@@ -29,7 +27,7 @@ export function Instructions() {
           <HoverCard open={isOpen}>
             <HoverCardTrigger asChild>
               <CircleHelp
-                className="h-4 w-4 text-gray-500 cursor-pointer"
+                className="h-4 w-4 cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
               />
             </HoverCardTrigger>

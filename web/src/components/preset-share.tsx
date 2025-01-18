@@ -39,7 +39,7 @@ export function PresetShare() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="text-sm font-semibold">
+        <Button size="sm" variant="secondary">
           <Share className="h-4 w-4" />
           <span className="ml-2 hidden md:block">Share</span>
         </Button>

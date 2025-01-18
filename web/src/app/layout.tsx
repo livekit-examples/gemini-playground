@@ -4,7 +4,7 @@ import { ConnectionProvider } from "@/hooks/use-connection";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { PHProvider } from "@/hooks/posthog-provider";
-import { Public_Sans } from "next/font/google";
+import { Roboto } from "next/font/google";
 import dynamic from "next/dynamic";
 
 const PostHogPageView = dynamic(
@@ -15,9 +15,9 @@ const PostHogPageView = dynamic(
 );
 
 // Configure the Public Sans font
-const publicSans = Public_Sans({
+const roboto = Roboto({
   subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  weight: ["100", "300", "400", "500", "700", "900"],
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={publicSans.className}>
+      <body className={roboto.className}>
         <PHProvider>
           <PlaygroundStateProvider>
             <ConnectionProvider>

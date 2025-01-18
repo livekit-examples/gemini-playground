@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Rocket, ArrowUpRight } from "lucide-react";
 import {
@@ -52,11 +54,6 @@ async def entrypoint(ctx: JobContext):
             temperature=${pgState.sessionConfig.temperature},
             max_response_output_tokens=${pgState.sessionConfig.maxOutputTokens === null ? '"inf"' : pgState.sessionConfig.maxOutputTokens},
             modalities=${pgState.sessionConfig.modalities == "text_and_audio" ? '["text", "audio"]' : '["text"]'},
-            turn_detection=openai.realtime.ServerVadOptions(
-                threshold=${pgState.sessionConfig.vadThreshold},
-                silence_duration_ms=${pgState.sessionConfig.vadSilenceDurationMs},
-                prefix_padding_ms=${pgState.sessionConfig.vadPrefixPaddingMs},
-            )
         )
     )
     agent.start(ctx.room)
@@ -82,12 +79,6 @@ export default defineAgent({
         temperature: ${pgState.sessionConfig.temperature},
         maxResponseOutputTokens: ${pgState.sessionConfig.maxOutputTokens === null ? Infinity : pgState.sessionConfig.maxOutputTokens},
         modalities: ${pgState.sessionConfig.modalities === "text_and_audio" ? "['text', 'audio']" : "['text']"},
-        turnDetection: {
-          type: 'server_vad',
-          threshold: ${pgState.sessionConfig.vadThreshold},
-          silence_duration_ms: ${pgState.sessionConfig.vadSilenceDurationMs},
-          prefix_padding_ms: ${pgState.sessionConfig.vadPrefixPaddingMs},
-        },
       }),
     });
 
@@ -116,8 +107,9 @@ cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url), workerType
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant="default"
-          className="group relative transition-all duration-300 ease-in-out transform hover:scale-105 text-sm font-semibold"
+          size="sm"
+          variant="primary"
+          className="relative"
         >
           <Rocket className="h-5 w-5" />
           <span className="sm:ml-2 hidden sm:block">Build with LiveKit</span>

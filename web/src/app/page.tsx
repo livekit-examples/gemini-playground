@@ -1,11 +1,14 @@
-import { Header } from "@/components/header";
-import { RoomComponent } from "@/components/room-component";
-import { Auth } from "@/components/auth";
-import LK from "@/components/lk";
-import Heart from "@/assets/heart.svg";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { defaultPresets } from "@/data/presets";
 import { Metadata } from "next";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import { RoomComponent } from "@/components/room-component";
+import LK from "@/components/lk";
+import Gemini from "@/components/gemini";
+import Heart from "@/assets/heart.svg";
+import { defaultPresets } from "@/data/presets";
+import { CodeViewer } from "@/components/code-viewer";
+import { PresetSave } from "@/components/preset-save";
+import { PresetSelector } from "@/components/preset-selector";
+import { PresetShare } from "@/components/preset-share";
 
 export async function generateMetadata({
   searchParams,
@@ -50,13 +53,22 @@ export async function generateMetadata({
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col h-full bg-neutral-100">
-      <header className="flex flex-shrink-0 h-12 items-center justify-between px-4 w-full md:mx-auto">
-        <LK />
-        <Auth />
+    <div className="flex flex-col h-full bg-neutral-900">
+      <header className="flex flex-shrink-0 h-12 items-center justify-between px-4 py-8 w-full md:mx-auto">
+        <div className="flex items-center gap-2">
+          <LK />
+          <span>×</span>
+          <Gemini />
+          <span>Realtime Playground</span>
+        </div>
+        <div className="inline-flex flex-row items-center space-x-2">
+          <PresetSelector />
+          <PresetSave />
+          <PresetShare />
+          <CodeViewer />
+        </div>
       </header>
-      <main className="flex flex-col flex-grow overflow-hidden p-0 md:p-2 md:pt-0 w-full md:mx-auto">
-        <Header />
+      <main className="flex flex-col flex-grow overflow-hidden p-0  w-full md:mx-auto">
         <RoomComponent />
       </main>
       <footer className="hidden md:flex md:items-center md:gap-2 md:justify-end font-mono uppercase text-right pt-1 pb-2 px-8 text-xs text-gray-600 w-full md:mx-auto">

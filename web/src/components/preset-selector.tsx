@@ -117,6 +117,7 @@ export function PresetSelector(props: PopoverProps) {
       <Popover open={open} onOpenChange={setOpen} {...props}>
         <PopoverTrigger asChild>
           <Button
+            size="sm"
             variant="outline"
             role="combobox"
             aria-label="Load…"
