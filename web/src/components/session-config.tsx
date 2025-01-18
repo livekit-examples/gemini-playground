@@ -8,7 +8,7 @@ import { ConfigurationFormFieldProps } from "./configuration-form";
 import { ModelSelector } from "./model-selector";
 export function SessionConfig({ form }: ConfigurationFormFieldProps) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-4 pt-2">
       <ModelSelector form={form} />
       <VoiceSelector form={form} />
       <ModalitiesSelector form={form} />

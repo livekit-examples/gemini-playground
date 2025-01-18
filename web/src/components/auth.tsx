@@ -24,7 +24,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ellipsisMiddle } from "@/lib/utils";
-import { AuthBanner } from "./authBanner";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 
@@ -103,7 +102,6 @@ export function AuthDialog({
         isModal={true}
       >
         <div className="overflow-y-auto">
-          <AuthBanner />
           <div className="px-6 pb-6 pt-4 overflow-y-auto">
             <Form {...form}>
               <form
@@ -147,7 +145,7 @@ export function AuthDialog({
                         <FormLabel className="font-semibold text-sm whitespace-nowrap">
                           Enter your{" "}
                           <a
-                            href="https://platform.openai.com/api-keys"
+                            href="https://aistudio.google.com/app/apikey"
                             target="_blank"
                             className="inline-flex items-center text-gemini-blue underline"
                           >
@@ -181,7 +179,7 @@ export function AuthDialog({
 
                   <div className="flex items-center flex-1 justify-end">
                     <a
-                      href="https://github.com/livekit-examples/realtime-playground"
+                      href="https://github.com/livekit-examples/gemini-playground"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline flex items-center gap-1"

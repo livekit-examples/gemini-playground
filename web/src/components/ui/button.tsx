@@ -10,13 +10,13 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-purple-400 shadow-lg shadow-neutral-900 hover:bg-neutral-700 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
+          "bg-neutral-900 shadow-sm shadow-neutral-900 hover:bg-neutral-700 hover:text-neutral-900",
         primary:
-          "bg-gemini-blue text-neutral-900 shadow-lg shadow-neutral-900 hover:bg-[#b1c5ff]",
+          "bg-gemini-blue text-neutral-900 shadow-sm shadow-neutral-900 hover:bg-[#b1c5ff]",
         destructive:
           "bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/90",
         outline:
-          "bg-neutral-700 shadow-lg shadow-neutral-900 hover:bg-neutral-700 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:hover:bg-neutral-800 dark:hover:text-neutral-50",
+          "flex h-9 items-center rounded-md bg-neutral-700 px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-100 hover:ring-1 hover:ring-neutral-100 disabled:cursor-not-allowed disabled:opacity-50",
         secondary:
           "bg-neutral-100 text-neutral-900 shadow-sm hover:bg-neutral-100/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80",
         ghost:

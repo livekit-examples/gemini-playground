@@ -39,13 +39,8 @@ export function TemperatureSelector({
     ConfigurationFormSchema.shape.temperature,
   );
 
-  const [isHoveringSlider, setIsHoveringSlider] =
-    React.useState<boolean>(false);
-
   return (
     <div
-      onMouseEnter={() => setIsHoveringSlider(true)}
-      onMouseLeave={() => setIsHoveringSlider(false)}
       className="pb-2"
     >
       <FormField
@@ -60,13 +55,12 @@ export function TemperatureSelector({
                   <FormControl>
                     <Input
                       {...field}
-                      className={`shadow-none font-light py-0 h-8 max-w-[100px] text-right ${
-                        isHoveringSlider ? " border" : " border-none"
-                      }`}
+                      type="number"
+                      className="w-[100px]"
                     />
                   </FormControl>
                 </div>
-                <FormControl>
+                <FormControl className="mt-2">
                   <Slider
                     max={maxValue}
                     min={minValue}
@@ -74,7 +68,7 @@ export function TemperatureSelector({
                     step={0.01}
                     onValueChange={(v) => field.onChange(v[0])}
                     value={[field.value]}
-                    className="[&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
+                    className="pt-2 [&_[role=slider]]:h-4 [&_[role=slider]]:w-4"
                     aria-label="Temperature"
                   />
                 </FormControl>

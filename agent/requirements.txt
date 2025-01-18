@@ -2,4 +2,4 @@ livekit >= 0.18.2
 livekit-protocol
 livekit-agents==0.12.6
 python-dotenv~=1.0
-git+https://github.com/livekit/agents.git@main#subdirectory=livekit-plugins/livekit-plugins-google
+git+https://github.com/livekit/agents.git@gemini-realtime-stt#subdirectory=livekit-plugins/livekit-plugins-google

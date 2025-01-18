@@ -11,7 +11,7 @@ export function ConfigurationFormDrawer({
   return (
     <Drawer>
       <DrawerTrigger asChild>{children}</DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent className="">
         <div className="flex flex-col h-[70vh]">
           <div className="flex-grow overflow-y-auto">
             <ConfigurationForm />

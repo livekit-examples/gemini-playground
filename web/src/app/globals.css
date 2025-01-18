@@ -58,7 +58,7 @@ html {
   }
 
   & > [data-lk-highlighted='false'] {
-    @apply bg-black/10 !important;
+    @apply bg-gemini-blue !important;
   }
 }
 
@@ -74,23 +74,5 @@ html {
   src: url('/fonts/CommitMono-700-Regular.otf') format('opentype');
   font-weight: 700;
   font-style: normal;
-}
-
-span.lk-audio-bar { 
-  &[data-lk-bar-index='0'] {
-    background: #4C8DD9 !important;
-  }
-  &[data-lk-bar-index='1'] {
-    background: #5B88D6 !important;
-  }
-  &[data-lk-bar-index='2'] {
-    background: #A671BF !important;
-  }
-  &[data-lk-bar-index='3'] {
-    background: #D2677C !important;
-  }
-  &[data-lk-bar-index='4'] {
-    background: #F1974A !important;
-  }
 }
 

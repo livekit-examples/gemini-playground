@@ -39,7 +39,7 @@ export const ConnectionProvider = ({
     voice: VoiceId;
   }>({ wsUrl: "", token: "", shouldConnect: false, voice: VoiceId.PUCK });
 
-  const { pgState, dispatch } = usePlaygroundState();
+  const { pgState } = usePlaygroundState();
 
   const connect = async () => {
     if (!pgState.geminiAPIKey) {

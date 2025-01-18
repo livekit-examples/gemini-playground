@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import uuid
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Literal, List
 
@@ -100,17 +101,16 @@ async def run_multimodal_agent(ctx: JobContext, participant: rtc.Participant):
         temperature=config.temperature,
         max_output_tokens=int(config.max_response_output_tokens),
     )
-    assistant = MultimodalAgent(model=model)
-    assistant.start(ctx.room)
-    session = model.sessions[0]
-
-    if config.modalities == ["TEXT", "AUDIO"]:
-        chat_ctx = llm.ChatContext(messages=[llm.ChatMessage(
+    assistant = MultimodalAgent(
+        model=model,
+        chat_ctx=llm.ChatContext(messages=[llm.ChatMessage(
                 role="user",
                 content="Please begin the interaction with the user in a manner consistent with your instructions.",
             )
         ])
-        await session.set_chat_ctx(chat_ctx)
+    )
+    assistant.start(ctx.room)
+    session = model.sessions[0]
 
     @ctx.room.local_participant.register_rpc_method("pg.updateConfig")
     async def update_config(
@@ -124,7 +124,6 @@ async def run_multimodal_agent(ctx: JobContext, participant: rtc.Participant):
             logger.info(
                 f"config changed: {new_config.to_dict()}, participant: {participant.identity}"
             )
-            session = model.sessions[0]
             session._queue_msg({ "type": "session.update", "session": new_config.to_dict() })
             return json.dumps({"changed": True})
         else:
