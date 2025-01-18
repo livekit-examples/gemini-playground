@@ -2,6 +2,8 @@
 
 This project is an interactive playground that demonstrates the capabilities of Google's Gemini Multimodal Live API, allowing users to experiment with the API directly in their browser. It's built on top of LiveKit Agents.
 
+![Gemini Multimodal Live playground preview](./web/public/playground-preview.gif)
+
 ## Repository Structure
 
 ### /agent

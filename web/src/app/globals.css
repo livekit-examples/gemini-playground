@@ -4,6 +4,7 @@
 
 :root {
   @apply text-neutral-50 bg-neutral-900;
+  --lk-control-fg: #000;
 }
 
 @layer utilities {
@@ -51,28 +52,27 @@ html {
     background-color: rgba(0, 0, 0, 0.05) !important;
   }
 
-  &[data-lk-va-state='speaking'] > .lk-audio-bar,
+  &[data-lk-va-state="speaking"] > .lk-audio-bar,
   & > .lk-audio-bar.lk-highlighted,
-  & > [data-lk-highlighted='true'] {
+  & > [data-lk-highlighted="true"] {
     @apply opacity-100 !important;
   }
 
-  & > [data-lk-highlighted='false'] {
+  & > [data-lk-highlighted="false"] {
     @apply bg-gemini-blue !important;
   }
 }
 
 @font-face {
-  font-family: 'Commit Mono';
-  src: url('/fonts/CommitMono-400-Regular.otf') format('opentype');
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-400-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Commit Mono';
-  src: url('/fonts/CommitMono-700-Regular.otf') format('opentype');
+  font-family: "Commit Mono";
+  src: url("/fonts/CommitMono-700-Regular.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
 }
-
