@@ -37,13 +37,13 @@ export const ConnectionProvider = ({
     token: string;
     shouldConnect: boolean;
     voice: VoiceId;
-  }>({ wsUrl: "", token: "", shouldConnect: false, voice: VoiceId.alloy });
+  }>({ wsUrl: "", token: "", shouldConnect: false, voice: VoiceId.PUCK });
 
   const { pgState, dispatch } = usePlaygroundState();
 
   const connect = async () => {
-    if (!pgState.openaiAPIKey) {
-      throw new Error("OpenAI API key is required to connect");
+    if (!pgState.geminiAPIKey) {
+      throw new Error("Gemini API key is required to connect");
     }
     const response = await fetch("/api/token", {
       method: "POST",
@@ -73,10 +73,10 @@ export const ConnectionProvider = ({
 
   // Effect to handle API key changes
   useEffect(() => {
-    if (pgState.openaiAPIKey === null && connectionDetails.shouldConnect) {
+    if (pgState.geminiAPIKey === null && connectionDetails.shouldConnect) {
       disconnect();
     }
-  }, [pgState.openaiAPIKey, connectionDetails.shouldConnect, disconnect]);
+  }, [pgState.geminiAPIKey, connectionDetails.shouldConnect, disconnect]);
 
   return (
     <ConnectionContext.Provider

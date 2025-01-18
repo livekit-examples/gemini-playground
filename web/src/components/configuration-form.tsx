@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
 import { SessionConfig } from "@/components/session-config";
-import { TurnDetectionTypeId } from "@/data/turn-end-types";
 import { VoiceId } from "@/data/voices";
 import { ModelId } from "@/data/models";
 import { UseFormReturn } from "react-hook-form";
@@ -23,18 +22,12 @@ import { useConnection } from "@/hooks/use-connection";
 import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ModalitiesId } from "@/data/modalities";
-import { TranscriptionModelId } from "@/data/transcription-models";
 export const ConfigurationFormSchema = z.object({
   model: z.nativeEnum(ModelId),
-  transcriptionModel: z.nativeEnum(TranscriptionModelId),
-  turnDetection: z.nativeEnum(TurnDetectionTypeId),
   modalities: z.nativeEnum(ModalitiesId),
   voice: z.nativeEnum(VoiceId),
   temperature: z.number().min(0.6).max(1.2),
   maxOutputTokens: z.number().nullable(),
-  vadThreshold: z.number().min(0).max(1),
-  vadSilenceDurationMs: z.number().min(0).max(5000),
-  vadPrefixPaddingMs: z.number().min(0).max(5000),
 });
 
 export interface ConfigurationFormFieldProps {
@@ -62,12 +55,6 @@ export function ConfigurationForm() {
     const attributes: { [key: string]: string } = {
       instructions: pgState.instructions,
       voice: values.voice,
-      turn_detection: JSON.stringify({
-        type: values.turnDetection,
-        threshold: values.vadThreshold,
-        silence_duration_ms: values.vadSilenceDurationMs,
-        prefix_padding_ms: values.vadPrefixPaddingMs,
-      }),
       modalities: values.modalities,
       temperature: values.temperature.toString(),
       max_output_tokens: values.maxOutputTokens

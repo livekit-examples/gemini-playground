@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        "oai-green": "rgb(16, 163, 127)",
+        "gemini-blue": "rgb(135, 169, 255)",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -23,7 +23,7 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ["Public Sans", "sans-serif"],
+        sans: ["Roboto", "sans-serif"],
         mono: ["Commit Mono", "monospace"],
       },
     },

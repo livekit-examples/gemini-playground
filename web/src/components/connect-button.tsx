@@ -18,7 +18,7 @@ export function ConnectButton() {
     if (shouldConnect) {
       await disconnect();
     } else {
-      if (!pgState.openaiAPIKey) {
+      if (!pgState.geminiAPIKey) {
         setShowAuthDialog(true);
       } else {
         await initiateConnection();
@@ -43,18 +43,19 @@ export function ConnectButton() {
   };
 
   useEffect(() => {
-    if (initiateConnectionFlag && pgState.openaiAPIKey) {
+    if (initiateConnectionFlag && pgState.geminiAPIKey) {
       initiateConnection();
       setInitiateConnectionFlag(false);
     }
-  }, [initiateConnectionFlag, initiateConnection, pgState.openaiAPIKey]);
+  }, [initiateConnectionFlag, initiateConnection, pgState.geminiAPIKey]);
 
   return (
     <>
       <Button
         onClick={handleConnectionToggle}
         disabled={connecting || shouldConnect}
-        className="text-sm font-semibold bg-oai-green"
+        variant="primary"
+        className="text-sm font-semibold"
       >
         {connecting || shouldConnect ? (
           <>

@@ -19,18 +19,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
+import { ArrowUpRight, LockKeyhole } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ellipsisMiddle } from "@/lib/utils";
 import { AuthBanner } from "./authBanner";
-import { LockKeyhole } from "lucide-react";
-import { ArrowUpRight } from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
+
 const AuthFormSchema = z.object({
-  openaiAPIKey: z.string().min(1, { message: "API key is required" }),
+  geminiAPIKey: z.string().min(1, { message: "API key is required" }),
 });
 
 export function Auth() {
@@ -47,13 +46,13 @@ export function Auth() {
 
   return (
     <div>
-      {pgState.openaiAPIKey && (
+      {pgState.geminiAPIKey && (
         <div className="text-xs flex gap-2 items-center">
-          <span className="font-semibold text-neutral-700">
-            Using OpenAI API Key
+          <span className="font-semibold text-neutral-400">
+            Using Gemini API Key
           </span>
           <div className="py-1 px-2 rounded-md bg-neutral-200 text-neutral-600">
-            {ellipsisMiddle(pgState.openaiAPIKey, 4, 4)}
+            {ellipsisMiddle(pgState.geminiAPIKey, 4, 4)}
           </div>
           <a className="hover:underline cursor-pointer" onClick={onLogout}>
             Clear
@@ -82,17 +81,17 @@ export function AuthDialog({
   const form = useForm<z.infer<typeof AuthFormSchema>>({
     resolver: zodResolver(AuthFormSchema),
     defaultValues: {
-      openaiAPIKey: pgState.openaiAPIKey || "",
+      geminiAPIKey: pgState.geminiAPIKey || "",
     },
   });
 
-  // Add this useEffect hook to watch for changes in pgState.openaiAPIKey
+  // Add this useEffect hook to watch for changes in pgState.geminiAPIKey
   useEffect(() => {
-    form.setValue("openaiAPIKey", pgState.openaiAPIKey || "");
-  }, [pgState.openaiAPIKey, form]);
+    form.setValue("geminiAPIKey", pgState.geminiAPIKey || "");
+  }, [pgState.geminiAPIKey, form]);
 
   function onSubmit(values: z.infer<typeof AuthFormSchema>) {
-    dispatch({ type: "SET_API_KEY", payload: values.openaiAPIKey || null });
+    dispatch({ type: "SET_API_KEY", payload: values.geminiAPIKey || null });
     onOpenChange(false);
     onAuthComplete();
   }
@@ -112,9 +111,9 @@ export function AuthDialog({
                 className="flex flex-col gap-4"
               >
                 <DialogHeader className="gap-2">
-                  <DialogTitle>OpenAI Realtime API Playground</DialogTitle>
+                  <DialogTitle>Gemini 2.0 Realtime API Playground</DialogTitle>
                   <DialogDescription>
-                    Try out OpenAI&apos;s new Realtime API right from your
+                    Try out Google&apos;s new Gemini 2.0 Realtime API right from your
                     browser with this playground built on{" "}
                     <a
                       href="https://github.com/livekit/agents"
@@ -128,20 +127,20 @@ export function AuthDialog({
                   <DialogDescription>
                     You must have a valid{" "}
                     <a
-                      href="https://platform.openai.com/api-keys"
+                      href="https://aistudio.google.com/app/apikey"
                       target="_blank"
-                      className="underline text-oai-green"
+                      className="underline text-gemini-blue"
                     >
-                      OpenAI API key
+                      Gemini API key
                     </a>{" "}
-                    to connect the playground to your own OpenAI platform
+                    to connect the playground to your own Gemini platform
                     account.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="bg-black/10 h-[1px] w-full" />
                 <FormField
                   control={form.control}
-                  name="openaiAPIKey"
+                  name="geminiAPIKey"
                   render={({ field }) => (
                     <FormItem>
                       <div className="flex flex-col gap-2">
@@ -150,9 +149,9 @@ export function AuthDialog({
                           <a
                             href="https://platform.openai.com/api-keys"
                             target="_blank"
-                            className="inline-flex items-center text-oai-green underline"
+                            className="inline-flex items-center text-gemini-blue underline"
                           >
-                            OpenAI API Key
+                            Gemini API Key
                             <ArrowUpRight className="h-4 w-4 ml-1" />
                           </a>
                         </FormLabel>
@@ -160,7 +159,7 @@ export function AuthDialog({
                           <FormControl className="w-full">
                             <Input
                               className="w-full"
-                              placeholder="OpenAI API Key"
+                              placeholder="Gemini API Key"
                               {...field}
                             />
                           </FormControl>

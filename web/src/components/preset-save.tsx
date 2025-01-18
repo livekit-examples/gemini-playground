@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -55,7 +57,7 @@ export function PresetSave() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="text-sm font-semibold">
+        <Button size="sm" variant="secondary">
           <Save className="w-4 h-4" />
           <span className="md:ml-2 hidden md:block">Save</span>
         </Button>

@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Edit, Settings, MessageSquareQuote, AudioLines } from "lucide-react";
+import { Edit, Settings, AudioLines } from "lucide-react";
 import { ConfigurationFormDrawer } from "@/components/configuration-form-drawer";
-import { TranscriptDrawer } from "@/components/transcript-drawer";
 
 interface ChatControlsProps {
   showEditButton: boolean;
@@ -33,11 +32,6 @@ export function ChatControls({
             )}
           </Button>
         )}
-        <TranscriptDrawer>
-          <Button variant="outline" size="icon" className="md:hidden">
-            <MessageSquareQuote className="h-4 w-4" />
-          </Button>
-        </TranscriptDrawer>
       </div>
     </div>
   );

@@ -137,7 +137,7 @@ export function Chat() {
           </div>
         </div>
 
-        <div className="md:mt-2 md:pt-2 md:mb-12 max-md:fixed max-md:bottom-12 max-md:left-1/2 max-md:-translate-x-1/2 max-md:z-50 xl:fixed xl:bottom-12 xl:left-1/2 xl:-translate-x-1/2 xl:z-50">
+        <div className="my-4">
           {renderConnectionControl()}
         </div>
       </div>

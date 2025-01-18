@@ -3,17 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  @apply text-neutral-50 bg-neutral-900;
 }
 
 @layer utilities {
@@ -55,8 +45,7 @@ html {
   gap: 12px !important;
 
   & > .lk-audio-bar {
-    /* aspect-ratio: 1/1; */
-    /* width: auto !important; */
+    opacity: 0.5;
     width: 64px !important;
     min-height: 64px !important;
     background-color: rgba(0, 0, 0, 0.05) !important;
@@ -65,7 +54,7 @@ html {
   &[data-lk-va-state='speaking'] > .lk-audio-bar,
   & > .lk-audio-bar.lk-highlighted,
   & > [data-lk-highlighted='true'] {
-    @apply bg-black !important;
+    @apply opacity-100 !important;
   }
 
   & > [data-lk-highlighted='false'] {
@@ -86,3 +75,22 @@ html {
   font-weight: 700;
   font-style: normal;
 }
+
+span.lk-audio-bar { 
+  &[data-lk-bar-index='0'] {
+    background: #4C8DD9 !important;
+  }
+  &[data-lk-bar-index='1'] {
+    background: #5B88D6 !important;
+  }
+  &[data-lk-bar-index='2'] {
+    background: #A671BF !important;
+  }
+  &[data-lk-bar-index='3'] {
+    background: #D2677C !important;
+  }
+  &[data-lk-bar-index='4'] {
+    background: #F1974A !important;
+  }
+}
+

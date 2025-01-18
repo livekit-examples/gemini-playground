@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import uuid
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, Literal, List
 
@@ -57,9 +56,6 @@ class SessionConfig:
 
 
 def parse_session_config(data: Dict[str, Any]) -> SessionConfig:
-    turn_detection = None
-
-
     config = SessionConfig(
         gemini_api_key=data.get("gemini_api_key", ""),
         instructions=data.get("instructions", ""),
@@ -103,7 +99,6 @@ async def run_multimodal_agent(ctx: JobContext, participant: rtc.Participant):
         voice=config.voice,
         temperature=config.temperature,
         max_output_tokens=int(config.max_response_output_tokens),
-        modalities=config.modalities,
     )
     assistant = MultimodalAgent(model=model)
     assistant.start(ctx.room)
