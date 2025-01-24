@@ -97,8 +97,8 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         last.participant === current.participant &&
         last.participant?.isAgent &&
         (current.segment.firstReceivedTime ?? 0) -
-          (last.segment.lastReceivedTime ?? 0) <=
-          1000 &&
+        (last.segment.lastReceivedTime ?? 0) <=
+        1000 &&
         !last.segment.id.startsWith("status-") &&
         !current.segment.id.startsWith("status-")
       ) {

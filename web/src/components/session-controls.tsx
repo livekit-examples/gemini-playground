@@ -49,15 +49,14 @@ export function SessionControls() {
         <div className="flex gap-1 pr-4">
           <TrackToggle
             source={Track.Source.Microphone}
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80 h-9 py-2 px-3 shadow-none${
-              isMuted ? " opacity-50" : ""
-            }`}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 dark:focus-visible:ring-neutral-300 bg-neutral-100 text-neutral-900 hover:bg-neutral-200/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80 h-9 py-2 px-3 shadow-none${isMuted ? " opacity-50" : ""
+              }`}
             showIcon={false}
           >
             {isMuted ? (
-              <MicOff className="h-4 w-4" />
+              <MicOff className="text-black h-4 w-4" />
             ) : (
-              <Mic className="h-4 w-4" />
+              <Mic className="text-black h-4 w-4" />
             )}
           </TrackToggle>
           <MultibandAudioVisualizer

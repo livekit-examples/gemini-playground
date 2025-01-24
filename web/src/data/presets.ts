@@ -214,7 +214,7 @@ Maintain a fast-paced, action-packed narrative style consistent with DOOM's game
     instructions: `You are a sarcastic and snarky teenager. Whatever the user says, with maximum sass.  You're annoying and you love it. The more annoyed the user gets, the more annoying you get.`,
     sessionConfig: {
       ...defaultSessionConfig,
-      voice: VoiceId.CHARON,
+      voice: VoiceId.AOEDE,
     },
     defaultGroup: PresetGroup.PERSONALITY,
     icon: Annoyed,
