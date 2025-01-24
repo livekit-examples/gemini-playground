@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useConnection } from "@/hooks/use-connection";
-import { Loader2, Mic } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
 import { AuthDialog } from "./auth";
 
