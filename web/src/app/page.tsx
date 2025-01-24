@@ -61,7 +61,7 @@ export default function Dashboard() {
           <div className="flex gap-2 items-center">
             <Gemini />
             <span className="text-[18px] pt-[3px] font-light">
-              Realtime Playground
+              Multimodal Live Playground
             </span>
           </div>
         </div>

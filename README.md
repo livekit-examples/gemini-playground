@@ -24,15 +24,15 @@ This directory houses the web frontend, built with Next.js.
 
 ### Agent Setup
 
-1. Navigate to the `/agent` directory
-2. Copy the sample environment file: `cp .env.sample .env.local`
-3. Open `.env.local` in a text editor and enter your LiveKit credentials
-1. Create a virtual environment: `python -m venv .venv`
-2. Activate the virtual environment:
+1. Copy the example environment file: `cp .env.example .env.local`
+2. Open `.env.local` in a text editor and enter your LiveKit credentials
+3. Navigate to the `/agent` directory
+4. Create a virtual environment: `python -m venv .venv`
+5. Activate the virtual environment:
    - On macOS and Linux: `source .venv/bin/activate`
    - On Windows: `.venv\Scripts\activate`
-3. Install dependencies: `pip install -r requirements.txt`
-4. Run the agent in development mode: `python main.py dev`
+6. Install dependencies: `pip install -r requirements.txt`
+7. Run the agent in development mode: `python main.py dev`
 
 ### Web Frontend Setup
 
