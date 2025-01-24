@@ -63,10 +63,7 @@ export function ConnectButton() {
             Connecting
           </>
         ) : (
-          <>
-            <Mic className="mr-2 h-4 w-4" />
-            Connect
-          </>
+          <>Start a conversation</>
         )}
       </Button>
       <AuthDialog

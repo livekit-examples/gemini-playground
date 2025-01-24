@@ -31,7 +31,7 @@ export function SessionControls() {
 
   const localMultibandVolume = useMultibandTrackVolume(
     localParticipant.microphoneTrack?.track,
-    9,
+    9
   );
   const [isMuted, setIsMuted] = useState(localParticipant.isMicrophoneEnabled);
   const { isNoiseFilterEnabled, isNoiseFilterPending, setNoiseFilterEnabled } =
@@ -45,7 +45,7 @@ export function SessionControls() {
 
   return (
     <div className="flex flex-row gap-2">
-      <div className="flex items-center rounded-md bg-neutral-100 text-secondary-foreground">
+      <div className="flex items-center rounded-md bg-neutral-900 text-secondary-foreground">
         <div className="flex gap-1 pr-4">
           <TrackToggle
             source={Track.Source.Microphone}
@@ -74,9 +74,9 @@ export function SessionControls() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="secondary"
-              className="px-2.5 shadow-none hover:bg-neutral-200/80 rounded-l-none border-l-[1px] border-neutral-200 text-sm font-semibold"
+              className="px-2.5 bg-neutral-900 shadow-none hover:bg-neutral-800/80 rounded-l-none border-l-[1px] border-neutral-800 text-sm font-semibold"
             >
-              <ChevronDown className="h-4 w-4 text-secondary-foreground" />
+              <ChevronDown className="h-4 w-4 text-neutral-500" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent

@@ -61,8 +61,8 @@ export function InstructionsEditor({
       onFocus={onFocus}
       onBlur={handleBlur}
       placeholder="Enter system instructions"
-      className="w-full h-full rounded outline-none font-mono text-sm bg-transparent"
-      rows={6}
+      className="w-full rounded outline-none font-mono text-xs leading-loose bg-transparent"
+      rows={4}
     />
   );
 }
