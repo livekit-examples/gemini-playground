@@ -9,12 +9,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   useConnectionState,
   useVoiceAssistant,
-  BarVisualizer,
 } from "@livekit/components-react";
 import { ChatControls } from "@/components/chat-controls";
 import { useAgent } from "@/hooks/use-agent";
 import { useConnection } from "@/hooks/use-connection";
 import { toast } from "@/hooks/use-toast";
+import GeminiVisualizer from "@/components/visualizer/GeminiVisualizer";
 
 export function Chat() {
   const connectionState = useConnectionState();
@@ -70,7 +70,7 @@ export function Chat() {
     }
 
     setIsChatRunning(
-      connectionState === ConnectionState.Connected && hasSeenAgent,
+      connectionState === ConnectionState.Connected && hasSeenAgent
     );
 
     return () => {
@@ -84,13 +84,8 @@ export function Chat() {
 
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
-      <div className="h-[320px] mt-16 md:mt-0 lg:pb-24 w-full">
-        <BarVisualizer
-          state={state}
-          barCount={5}
-          trackRef={audioTrack}
-          className="w-full h-full"
-        />
+      <div className="h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
+        <GeminiVisualizer agentState={state} agentTrackRef={audioTrack} />
       </div>
     </div>
   );
@@ -132,14 +127,12 @@ export function Chat() {
           </div>
           <div className="grow h-full flex items-center justify-center">
             <div className="w-full hidden lg:block">
-              {isChatRunning && !isEditingInstructions && renderVisualizer()}
+              {!isEditingInstructions && renderVisualizer()}
             </div>
           </div>
         </div>
 
-        <div className="my-4">
-          {renderConnectionControl()}
-        </div>
+        <div className="my-4">{renderConnectionControl()}</div>
       </div>
     </div>
   );
