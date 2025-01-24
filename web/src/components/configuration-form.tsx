@@ -53,6 +53,7 @@ export function ConfigurationForm() {
   const updateConfig = useCallback(async () => {
     const values = pgState.sessionConfig;
     const attributes: { [key: string]: string } = {
+      gemini_api_key: pgState.geminiAPIKey || "",
       instructions: pgState.instructions,
       voice: values.voice,
       modalities: values.modalities,
@@ -87,6 +88,7 @@ export function ConfigurationForm() {
         method: "pg.updateConfig",
         payload: JSON.stringify(attributes),
       });
+      console.log("pg.updateConfig", response);
       let responseObj = JSON.parse(response);
       if (responseObj.changed) {
         toast({
