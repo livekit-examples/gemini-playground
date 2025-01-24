@@ -1,4 +1,5 @@
 livekit
-python-dotenv
 livekit-agents>=0.12.9
 livekit-plugins-google>=0.10.0
+git+https://github.com/livekit/agents.git@main#subdirectory=livekit-plugins/livekit-plugins-google
+python-dotenv

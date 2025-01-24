@@ -4,8 +4,9 @@ import asyncio
 import json
 import logging
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, Literal, List, cast
+from typing import Any, Dict, List, cast
 
+from dotenv import load_dotenv
 from google.genai.types import Modality
 from livekit import rtc
 from livekit.agents import (
@@ -20,9 +21,7 @@ from livekit.agents import (
 from livekit.agents.multimodal import MultimodalAgent
 from livekit.plugins.google import beta as google
 
-from dotenv import load_dotenv
-
-load_dotenv(dotenv_path="../.env.local")
+load_dotenv(dotenv_path=".env.local")
 
 logger = logging.getLogger("gemini-playground")
 logger.setLevel(logging.INFO)
@@ -116,6 +115,8 @@ class SessionManager:
             temperature=config.temperature,
             max_output_tokens=int(config.max_response_output_tokens),
             api_key=config.gemini_api_key,
+            enable_user_audio_transcription=False,
+            enable_agent_audio_transcription=False,
         )
         return model
 
@@ -146,7 +147,6 @@ class SessionManager:
                 agent = self.create_agent(model, session.chat_ctx_copy())
                 await self.replace_session(ctx, participant, agent, model)
                 return json.dumps({"changed": True})
-
             else:
                 return json.dumps({"changed": False})
 
