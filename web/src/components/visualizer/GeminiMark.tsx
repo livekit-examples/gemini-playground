@@ -8,7 +8,7 @@ import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { AgentState } from "@livekit/components-react";
 
 const accentColor = "#5282ed";
-const disconnectedColor = "#0F0F0F";
+const disconnectedColor = "#030303";
 
 const Shape: React.FC<{ volume: number; state: AgentState }> = ({
   volume,
@@ -99,11 +99,11 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
   const material = new THREE.MeshStandardMaterial({
     map: texture,
     emissiveMap: texture,
-    roughness: isDisconnected ? 0.8 : 0.25,
-    metalness: isDisconnected ? 0.6 : 1,
+    roughness: isDisconnected ? 0.8 : 1,
+    metalness: isDisconnected ? 0.2 : 0.6,
     side: THREE.DoubleSide,
     emissive: emissiveColor.current,
-    emissiveIntensity: volume > 0 ? 1.5 : 0.25,
+    emissiveIntensity: isDisconnected ? 0.5 : volume > 0 ? 3.5 : 0.25,
   });
 
   return <mesh ref={meshRef} geometry={geometry} material={material} />;
@@ -118,14 +118,16 @@ export const GeminiMark = ({
 }) => {
   return (
     <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
+      <ambientLight intensity={1} />
+      <pointLight position={[2, 0, 0]} intensity={5} />
       <Shape volume={volume} state={state} />
       <Environment preset="night" background={false} />
       <EffectComposer>
         <Bloom
-          intensity={volume > 0 ? 1 : 0}
-          radius={20}
-          luminanceThreshold={0}
-          luminanceSmoothing={0.9}
+          intensity={volume > 0 ? 2 : 0}
+          radius={50}
+          luminanceThreshold={0.0}
+          luminanceSmoothing={1}
         />
       </EffectComposer>
     </Canvas>
