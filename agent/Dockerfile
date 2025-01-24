@@ -1,21 +1,25 @@
-FROM python:3.10-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     bash \
     gcc \
-    musl-dev \
+    g++ \
+    build-essential \
     libffi-dev \
-    openssl-dev \
-    make
+    libssl-dev \
+    make \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+
+COPY .env.local .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "main.py", "run"]
+CMD ["python", "main.py", "start"]
