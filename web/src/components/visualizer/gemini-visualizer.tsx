@@ -1,6 +1,6 @@
 "use client";
 
-import { GeminiMark } from "./GeminiMark";
+import { GeminiMark } from "@/components/visualizer/gemini-mark";
 import Logo from "@/assets/gemini.svg";
 
 import {
@@ -14,7 +14,7 @@ type GeminiVisualizerProps = {
   agentTrackRef?: TrackReference;
 };
 
-export default function GeminiVisualizer({
+export function GeminiVisualizer({
   agentTrackRef,
   agentState,
 }: GeminiVisualizerProps) {
@@ -26,8 +26,8 @@ export default function GeminiVisualizer({
         perspective: "1000px",
       }}
     >
-      <div className="absolute z-0 left-1/2 top-1/4 -translate-x-1/2 -translate-y-10 opacity-[0.025]">
-        <Logo height="100" />
+      <div className="absolute z-0 left-1/2 top-1/4 -translate-x-1/2 -translate-y-10 opacity-[0.01]">
+        <Logo height="64" />
       </div>
       <GeminiMark volume={agentVolume} state={agentState} />
       <Shadow volume={agentVolume} state={agentState} />
@@ -46,15 +46,11 @@ const Shadow = ({ volume, state }: { volume: number; state?: AgentState }) => {
       }}
     >
       <div
-        className={`absolute transition-all duration-150 left-1/2 top-1/2 rounded-full`}
+        className={`absolute w-[200px] h-[100px] transition-all duration-150 left-1/2 top-1/2 rounded-full bg-gemini-blue`}
         style={{
-          width: `200px`,
-          height: `100px`,
-          transform: `translate(-50%, calc(-50% + 50px)) scale(${1 + volume * 0.2})`,
-          transformOrigin: "center",
+          transform: `translate(-50%, calc(-50% + 50px)) scale(${state === "disconnected" ? 0.6 : 0.75 + volume * 0.1})`,
           filter: `blur(30px) ${state === "disconnected" ? "saturate(0.0)" : "saturate(1.0)"}`,
-          opacity: state === "disconnected" ? 0.15 : volume > 0 ? 0.4 : 0.15,
-          background: "#5282ed",
+          opacity: state === "disconnected" ? 0.05 : volume > 0 ? 0.4 : 0.15,
         }}
       ></div>
     </div>

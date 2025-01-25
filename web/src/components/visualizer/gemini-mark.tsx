@@ -24,9 +24,11 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
     if (meshRef.current) {
       if (state !== "speaking") {
         if (state === "disconnected") {
-          meshRef.current.rotation.y += 0.1;
+          meshRef.current.rotation.y += 0.05;
+          meshRef.current.rotation.x = -0.15;
         } else {
           meshRef.current.rotation.y += 0.025;
+          meshRef.current.rotation.x = 0;
         }
       } else {
         meshRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -36,8 +38,20 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
         );
       }
 
-      const elapsedTime = frameState.clock.getElapsedTime();
-      meshRef.current.position.y = Math.sin(elapsedTime * 3) * 0.1;
+      if (state === "disconnected") {
+        meshRef.current.position.y = THREE.MathUtils.lerp(
+          meshRef.current.position.y,
+          -1,
+          0.1
+        );
+      } else {
+        const elapsedTime = frameState.clock.getElapsedTime();
+        meshRef.current.position.y = THREE.MathUtils.lerp(
+          meshRef.current.position.y,
+          Math.sin(elapsedTime * 3) * 0.1,
+          0.1
+        );
+      }
 
       const scale = THREE.MathUtils.lerp(
         meshRef.current.scale.x,
