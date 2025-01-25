@@ -69,7 +69,7 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
     }
   });
 
-  const createStarburstShape = (): THREE.Shape => {
+  const createGeminiShape = (): THREE.Shape => {
     const shape = new THREE.Shape();
     const size = 1;
     const curveControl = size * 0.05;
@@ -83,7 +83,7 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
     return shape;
   };
 
-  const shape = createStarburstShape();
+  const shape = createGeminiShape();
   const extrudeSettings: THREE.ExtrudeGeometryOptions = {
     depth: 0.3,
     bevelEnabled: true,
