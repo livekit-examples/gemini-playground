@@ -129,6 +129,7 @@ class SessionManager:
         self.current_model = self.create_model(self.current_config)
         self.current_agent = self.create_agent(self.current_model, chat_ctx)
         self.current_agent.start(room, participant)
+        self.current_agent.generate_reply("cancel_existing")
 
         @ctx.room.local_participant.register_rpc_method("pg.updateConfig")
         async def update_config(data: rtc.rpc.RpcInvocationData):
@@ -167,6 +168,7 @@ class SessionManager:
         self.current_agent = agent
         self.current_model = model
         agent.start(ctx.room, participant)
+        agent.generate_reply("cancel_existing")
 
         session = self.current_model.sessions[0]
 
