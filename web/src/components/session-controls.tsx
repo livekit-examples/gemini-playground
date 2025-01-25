@@ -44,7 +44,7 @@ export function SessionControls() {
         <div className="flex items-center gap-2">
           <TrackToggle
             source={Track.Source.Microphone}
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 bg-neutral-500 text-neutral-900 hover:!bg-neutral-800/80 hover:!rounded-l-md h-9 shadow-none !px-3 !border-r-[1px] !border-neutral-800`}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 text-neutral-900 hover:!bg-neutral-800/80 hover:!rounded-l-md h-9 shadow-none !px-3 !border-r-[1px] !border-neutral-800`}
             style={{ borderRightStyle: "solid" }}
             showIcon={false}
           >
