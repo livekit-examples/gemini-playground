@@ -49,7 +49,7 @@ export function TemperatureSelector({
         render={({ field }) => (
           <HoverCard openDelay={200}>
             <HoverCardTrigger asChild>
-              <FormItem>
+              <FormItem className="px-1">
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-sm">Temperature</FormLabel>
                   <FormControl>

@@ -28,7 +28,7 @@ export function MaxOutputTokensSelector({
       render={({ field }) => (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <FormItem className="space-y-2">
+            <FormItem className="space-y-2 px-1">
               <div className="flex items-center justify-between">
                 <FormLabel className="text-sm">Max output tokens</FormLabel>
                 <FormControl>

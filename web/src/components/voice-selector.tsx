@@ -34,7 +34,7 @@ export function VoiceSelector({ form, ...props }: ConfigurationFormFieldProps) {
       render={({ field }) => (
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
-            <FormItem className="flex flex-row items-center space-y-0 justify-between">
+            <FormItem className="flex flex-row items-center space-y-0 justify-between px-1">
               <FormLabel className="text-sm">Voice</FormLabel>
               <Select
                 onValueChange={(v) => {

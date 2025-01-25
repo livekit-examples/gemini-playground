@@ -147,7 +147,7 @@ export function ConfigurationForm() {
     <Form {...form}>
       <form className="h-full">
         <div className="flex flex-col h-full">
-          <div className="flex-shrink-0 py-4">
+          <div className="flex-shrink-0 py-4 px-1">
             <div className="text-xs font-semibold uppercase tracking-widest">
               Configuration
             </div>
