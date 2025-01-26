@@ -84,7 +84,7 @@ export function Chat() {
 
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
-      <div className="h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
+      <div className="h-[280px] lg:h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
         <GeminiVisualizer agentState={state} agentTrackRef={audioTrack} />
       </div>
     </div>
