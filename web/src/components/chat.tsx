@@ -14,7 +14,7 @@ import { ChatControls } from "@/components/chat-controls";
 import { useAgent } from "@/hooks/use-agent";
 import { useConnection } from "@/hooks/use-connection";
 import { toast } from "@/hooks/use-toast";
-import GeminiVisualizer from "@/components/visualizer/GeminiVisualizer";
+import { GeminiVisualizer } from "@/components/visualizer/gemini-visualizer";
 
 export function Chat() {
   const connectionState = useConnectionState();
@@ -84,7 +84,7 @@ export function Chat() {
 
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
-      <div className="h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
+      <div className="h-[280px] lg:h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
         <GeminiVisualizer agentState={state} agentTrackRef={audioTrack} />
       </div>
     </div>
@@ -115,11 +115,7 @@ export function Chat() {
         <div className="w-full h-full flex flex-col">
           <div className="flex items-center justify-center w-full">
             <div className="lg:hidden w-full">
-              {isChatRunning && !isEditingInstructions ? (
-                renderVisualizer()
-              ) : (
-                <Instructions />
-              )}
+              {!isEditingInstructions ? renderVisualizer() : <Instructions />}
             </div>
             <div className="hidden lg:block w-full">
               <Instructions />

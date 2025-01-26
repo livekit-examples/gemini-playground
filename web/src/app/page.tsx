@@ -53,7 +53,7 @@ export async function generateMetadata({
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col h-full bg-neutral-900">
+    <div className="flex flex-col h-dvh bg-neutral-900">
       <header className="flex flex-col md:flex-row flex-shrink-0 gap-3 md:h-12 items-center justify-between px-5 py-8 w-full md:mx-auto">
         <div className="flex items-center gap-3">
           <LK />
@@ -72,7 +72,7 @@ export default function Dashboard() {
           <CodeViewer />
         </div>
       </header>
-      <main className="flex flex-col flex-grow overflow-hidden p-0  w-full md:mx-auto">
+      <main className="flex flex-col flex-grow overflow-hidden p-0 pb-4 lg:pb-0 w-full md:mx-auto">
         <RoomComponent />
       </main>
       <footer className="hidden md:flex md:items-center md:gap-2 md:justify-end font-mono uppercase text-right py-3 px-8 text-xs text-neutral-600 w-full md:mx-auto">
@@ -97,7 +97,7 @@ export default function Dashboard() {
           <GitHubLogoIcon className="h-4 w-4" />
           View source on GitHub
         </a>
-        • © 2024 LiveKit
+        • © 2025 LiveKit
       </footer>
     </div>
   );
