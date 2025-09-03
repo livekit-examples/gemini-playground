@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,90 +9,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { ArrowUpRight, LockKeyhole } from "lucide-react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { ellipsisMiddle } from "@/lib/utils";
+import { ChefHat, Sparkles } from "lucide-react";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
-const AuthFormSchema = z.object({
-  geminiAPIKey: z.string().min(1, { message: "API key is required" }),
-});
-
 export function Auth() {
-  const { pgState, dispatch, showAuthDialog, setShowAuthDialog } =
-    usePlaygroundState();
-
-  const onLogout = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    dispatch({ type: "SET_API_KEY", payload: null });
-    setShowAuthDialog(true);
-  };
+  const { showAuthDialog, setShowAuthDialog } = usePlaygroundState();
 
   return (
     <div>
-      {pgState.geminiAPIKey && (
-        <div className="text-xs flex gap-2 items-center">
-          <span className="font-semibold text-neutral-400">
-            Using Gemini API Key
-          </span>
-          <div className="py-1 px-2 rounded-md bg-neutral-200 text-neutral-600">
-            {ellipsisMiddle(pgState.geminiAPIKey, 4, 4)}
-          </div>
-          <a className="hover:underline cursor-pointer" onClick={onLogout}>
-            Clear
-          </a>
-        </div>
-      )}
-      <AuthDialog
+      <WelcomeDialog
         open={showAuthDialog}
         onOpenChange={setShowAuthDialog}
-        onAuthComplete={() => setShowAuthDialog(false)}
+        onWelcomeComplete={() => setShowAuthDialog(false)}
       />
     </div>
   );
 }
 
-export function AuthDialog({
+export function WelcomeDialog({
   open,
   onOpenChange,
-  onAuthComplete,
+  onWelcomeComplete,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAuthComplete: () => void;
+  onWelcomeComplete: () => void;
 }) {
-  const { pgState, dispatch } = usePlaygroundState();
-  const form = useForm<z.infer<typeof AuthFormSchema>>({
-    resolver: zodResolver(AuthFormSchema),
-    defaultValues: {
-      geminiAPIKey: pgState.geminiAPIKey || "",
-    },
-  });
-
-  // Add this useEffect hook to watch for changes in pgState.geminiAPIKey
-  useEffect(() => {
-    form.setValue("geminiAPIKey", pgState.geminiAPIKey || "");
-  }, [pgState.geminiAPIKey, form]);
-
-  function onSubmit(values: z.infer<typeof AuthFormSchema>) {
-    dispatch({ type: "SET_API_KEY", payload: values.geminiAPIKey || null });
-    onOpenChange(false);
-    onAuthComplete();
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -102,98 +43,69 @@ export function AuthDialog({
       >
         <div className="overflow-y-auto">
           <div className="px-6 pb-6 pt-4 overflow-y-auto">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col gap-4"
-              >
-                <DialogHeader className="gap-2">
-                  <DialogTitle>
-                    Gemini 2.0 Multimodal Live API Playground
-                  </DialogTitle>
-                  <DialogDescription>
-                    Try out Google&apos;s new Gemini 2.0 Multimodal Live API
-                    right from your browser with this playground built on{" "}
-                    <a
-                      href="https://github.com/livekit/agents"
-                      target="_blank"
-                      className="underline"
-                    >
-                      LiveKit Agents
-                    </a>
-                    .
-                  </DialogDescription>
-                  <DialogDescription>
-                    You must have a valid{" "}
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      className="underline text-gemini-blue"
-                    >
-                      Gemini API key
-                    </a>{" "}
-                    to connect the playground to your own Gemini platform
-                    account.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="bg-black/10 h-[1px] w-full" />
-                <FormField
-                  control={form.control}
-                  name="geminiAPIKey"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex flex-col gap-2">
-                        <FormLabel className="font-semibold text-sm whitespace-nowrap">
-                          Enter your{" "}
-                          <a
-                            href="https://aistudio.google.com/app/apikey"
-                            target="_blank"
-                            className="inline-flex items-center text-gemini-blue underline"
-                          >
-                            Gemini API Key
-                            <ArrowUpRight className="h-4 w-4 ml-1" />
-                          </a>
-                        </FormLabel>
-                        <div className="flex gap-2 w-full">
-                          <FormControl className="w-full">
-                            <Input
-                              className="w-full"
-                              placeholder="Gemini API Key"
-                              {...field}
-                            />
-                          </FormControl>
-                          <Button type="submit">Connect</Button>
-                        </div>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogDescription className="text-xs py-2 flex justify-between items-center">
-                  <div className="flex items-center gap-2 flex-1">
-                    <LockKeyhole className="h-3 w-3 flex-shrink-0" />
-                    <span className="font-semibold">
-                      Your key is stored only in your browser&apos;s
-                      LocalStorage.
-                    </span>
-                  </div>
+            <DialogHeader className="gap-4 text-center">
+              <div className="flex justify-center">
+                <div className="relative">
+                  <ChefHat className="h-12 w-12 text-orange-500" />
+                  <Sparkles className="h-4 w-4 text-yellow-500 absolute -top-1 -right-1" />
+                </div>
+              </div>
+              <DialogTitle className="text-2xl">
+                Welcome to All You Can Cook!
+              </DialogTitle>
+              <DialogDescription className="text-base">
+                Meet <strong className="text-orange-600">Acai</strong>, your friendly AI cooking assistant! 
+                I&apos;m here to guide you through recipes step-by-step with voice instructions, 
+                cooking tips, and kitchen safety advice.
+              </DialogDescription>
+              <DialogDescription>
+                Built with{" "}
+                <a
+                  href="https://github.com/livekit/agents"
+                  target="_blank"
+                  className="underline text-orange-600 hover:text-orange-700"
+                >
+                  LiveKit Agents
+                </a>{" "}
+                and powered by Google&apos;s Gemini 2.0 Multimodal Live API.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="mt-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <h3 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+                <ChefHat className="h-4 w-4" />
+                What I can help you with:
+              </h3>
+              <ul className="text-sm text-orange-700 space-y-1">
+                <li>• Step-by-step cooking guidance</li>
+                <li>• Ingredient substitutions and measurements</li>
+                <li>• Cooking techniques and timing</li>
+                <li>• Kitchen safety tips</li>
+                <li>• Recipe troubleshooting</li>
+              </ul>
+            </div>
 
-                  <div className="flex items-center flex-1 justify-end">
-                    <a
-                      href="https://github.com/livekit-examples/gemini-playground"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline flex items-center gap-1"
-                    >
-                      <GitHubLogoIcon className="h-5 w-5" />
-                      View source on GitHub
-                    </a>
-                  </div>
-                </DialogDescription>
-              </form>
-            </Form>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => onWelcomeComplete()}
+                className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                Let&apos;s Start Cooking! 👨‍🍳
+              </button>
+            </div>
+
+            <div className="mt-6 pt-4 border-t flex justify-center">
+              <a
+                href="https://github.com/livekit-examples/gemini-playground"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-500 hover:text-gray-700 underline flex items-center gap-1"
+              >
+                <GitHubLogoIcon className="h-4 w-4" />
+                View source on GitHub
+              </a>
+            </div>
           </div>
-          <div className="h-[45vh] sm:h-0"></div>
         </div>
       </DialogContent>
     </Dialog>

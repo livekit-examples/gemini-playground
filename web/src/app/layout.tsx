@@ -4,6 +4,7 @@ import { ConnectionProvider } from "@/hooks/use-connection";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { PHProvider } from "@/hooks/posthog-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Roboto } from "next/font/google";
 import dynamic from "next/dynamic";
 
@@ -30,18 +31,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={roboto.className}>
         <PHProvider>
-          <PlaygroundStateProvider>
-            <ConnectionProvider>
-              <TooltipProvider>
-                <PostHogPageView />
-                {children}
-                <Toaster />
-              </TooltipProvider>
-            </ConnectionProvider>
-          </PlaygroundStateProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="all-you-can-cook-theme">
+            <PlaygroundStateProvider>
+              <ConnectionProvider>
+                <TooltipProvider>
+                  <PostHogPageView />
+                  {children}
+                  <Toaster />
+                </TooltipProvider>
+              </ConnectionProvider>
+            </PlaygroundStateProvider>
+          </ThemeProvider>
         </PHProvider>
       </body>
     </html>

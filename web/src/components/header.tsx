@@ -1,36 +1,33 @@
 "use client";
 
-import { CodeViewer } from "@/components/code-viewer";
-import { PresetSave } from "@/components/preset-save";
-import { PresetSelector } from "@/components/preset-selector";
-import { PresetShare } from "@/components/preset-share";
+import { ChefHat, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme-provider";
 
 export function Header() {
+  const { theme, setTheme } = useTheme();
+
   return (
-    <div className="flex flex-shrink-0 flex-col lg:flex-row p-4 rounded-t-md">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between lg:flex-grow">
-        <div className="flex flex-col mb-2 lg:mb-0">
-          <div className="flex flex-row items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">
-                Multimodal Live Playground
-              </h2>
-              <p className="text-sm text-gray-500">
-                Try Google&apos;s new Gemini 2.0 Multimodal Live API right from
-                your browser.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-row items-center justify-between sm:justify-end space-x-2 mt-2 lg:mt-0">
-          <div className="flex flex-row items-center space-x-2">
-            <PresetSelector />
-            <PresetSave />
-            <PresetShare />
-            <CodeViewer />
-          </div>
-        </div>
+    <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      {/* Left side - App name */}
+      <div className="flex items-center gap-2">
+        <ChefHat className="h-5 w-5 text-orange-500" />
+        <h1 className="text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+          All You Can Cook
+        </h1>
       </div>
-    </div>
+
+      {/* Right side - Theme toggle */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+        className="h-7 w-7 hover:bg-accent relative"
+      >
+        <Sun className="absolute h-4 w-4 text-orange-600 rotate-0 scale-100 transition-all dark:rotate-90 dark:scale-0" />
+        <Moon className="absolute h-4 w-4 text-slate-200 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    </header>
   );
 }

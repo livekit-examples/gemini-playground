@@ -2,22 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  @apply text-neutral-50 bg-neutral-900;
-  --lk-va-bar-width: 2px;
-  --lk-va-bar-gap: 4px;
-  --lk-fg: rgb(115 115 115 / var(--tw-text-opacity));
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    --primary: 25 95% 53%; /* Warm orange primary */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 25 100% 97%; /* Very light orange */
+    --secondary-foreground: 25 95% 35%; /* Darker orange */
+    --muted: 25 100% 97%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 25 100% 95%; /* Light orange accent */
+    --accent-foreground: 25 95% 35%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 25 30% 90%; /* Light orange border */
+    --input: 25 30% 95%; /* Light orange input */
+    --ring: 25 95% 53%; /* Orange ring */
+    --radius: 0.5rem;
+
+    /* LiveKit variables */
+    --lk-va-bar-width: 2px;
+    --lk-va-bar-gap: 4px;
+    --lk-fg: rgb(115 115 115 / var(--tw-text-opacity));
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 60 9.1% 97.8%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 60 9.1% 97.8%;
+    --primary-foreground: 20 14.3% 4.1%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
+    --ring: 24 5.7% 82.9%;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-}
-
-@layer base {
-  :root {
-    --radius: 0.5rem;
   }
 }
 

@@ -6,8 +6,8 @@ import {
   StartAudio,
 } from "@livekit/components-react";
 
-import { ConfigurationForm } from "@/components/configuration-form";
 import { Chat } from "@/components/chat";
+import { VoiceSelection } from "@/components/voice-selection";
 import { useConnection } from "@/hooks/use-connection";
 import { AgentProvider } from "@/hooks/use-agent";
 
@@ -19,7 +19,7 @@ export function RoomComponent() {
       token={token}
       connect={shouldConnect}
       audio={true}
-      className="flex flex-col px-4 md:grid md:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] flex-grow overflow-hidden"
+      className="flex flex-col flex-grow overflow-hidden max-w-md mx-auto w-full px-4"
       options={{
         publishDefaults: {
           stopMicTrackOnMute: true,
@@ -27,10 +27,13 @@ export function RoomComponent() {
       }}
     >
       <AgentProvider>
-        <div className="hidden lg:block h-full overflow-y-auto relative pr-4">
-          <ConfigurationForm />
+        {/* Voice selection at top - compact */}
+        <div className="py-3">
+          <VoiceSelection />
         </div>
-        <div className="w-full flex flex-col h-full mx-auto rounded-2xl bg-neutral-950 border border-neutral-800">
+        
+        {/* Main chat area - takes remaining space */}
+        <div className="flex flex-col flex-grow rounded-2xl bg-card border border-border overflow-hidden">
           <Chat />
         </div>
         <RoomAudioRenderer />

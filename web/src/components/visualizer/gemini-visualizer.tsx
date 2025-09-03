@@ -8,6 +8,7 @@ import {
   TrackReference,
   useTrackVolume,
 } from "@livekit/components-react";
+import { useTheme } from "@/components/theme-provider";
 
 type GeminiVisualizerProps = {
   agentState: AgentState;
@@ -19,6 +20,8 @@ export function GeminiVisualizer({
   agentState,
 }: GeminiVisualizerProps) {
   const agentVolume = useTrackVolume(agentTrackRef);
+  const { theme } = useTheme();
+  
   return (
     <div
       className="flex h-full w-full items-center justify-center relative"
@@ -30,12 +33,14 @@ export function GeminiVisualizer({
         <Logo height="64" />
       </div>
       <GeminiMark volume={agentVolume} state={agentState} />
-      <Shadow volume={agentVolume} state={agentState} />
+      <Shadow volume={agentVolume} state={agentState} theme={theme} />
     </div>
   );
 }
 
-const Shadow = ({ volume, state }: { volume: number; state?: AgentState }) => {
+const Shadow = ({ volume, state, theme }: { volume: number; state?: AgentState; theme: string }) => {
+  const shadowColor = theme === "light" ? "bg-amber-600" : "bg-gemini-blue";
+  
   return (
     <div
       className="absolute z-0"
@@ -46,7 +51,7 @@ const Shadow = ({ volume, state }: { volume: number; state?: AgentState }) => {
       }}
     >
       <div
-        className={`absolute w-[200px] h-[100px] transition-all duration-150 left-1/2 top-1/2 rounded-full bg-gemini-blue`}
+        className={`absolute w-[200px] h-[100px] transition-all duration-150 left-1/2 top-1/2 rounded-full ${shadowColor}`}
         style={{
           transform: `translate(-50%, calc(-50% + 50px)) scale(${state === "disconnected" ? 0.6 : 0.75 + volume * 0.1})`,
           filter: `blur(30px) ${state === "disconnected" ? "saturate(0.0)" : "saturate(1.0)"}`,

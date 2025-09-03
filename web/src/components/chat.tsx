@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Instructions } from "@/components/instructions";
+
 import { SessionControls } from "@/components/session-controls";
 import { ConnectButton } from "./connect-button";
 import { ConnectionState } from "livekit-client";
@@ -22,7 +22,7 @@ export function Chat() {
   const [isChatRunning, setIsChatRunning] = useState(false);
   const { agent } = useAgent();
   const { disconnect } = useConnection();
-  const [isEditingInstructions, setIsEditingInstructions] = useState(false);
+
 
   const [hasSeenAgent, setHasSeenAgent] = useState(false);
 
@@ -79,8 +79,7 @@ export function Chat() {
     };
   }, [connectionState, agent, disconnect, hasSeenAgent]);
 
-  const toggleInstructionsEdit = () =>
-    setIsEditingInstructions(!isEditingInstructions);
+
 
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
@@ -106,28 +105,10 @@ export function Chat() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4">
-      <ChatControls
-        showEditButton={isChatRunning}
-        isEditingInstructions={isEditingInstructions}
-        onToggleEdit={toggleInstructionsEdit}
-      />
-      <div className="flex flex-col flex-grow items-center lg:justify-between mt-12 lg:mt-0">
-        <div className="w-full h-full flex flex-col">
-          <div className="flex items-center justify-center w-full">
-            <div className="lg:hidden w-full">
-              {!isEditingInstructions ? renderVisualizer() : <Instructions />}
-            </div>
-            <div className="hidden lg:block w-full">
-              <Instructions />
-            </div>
-          </div>
-          <div className="grow h-full flex items-center justify-center">
-            <div className="w-full hidden lg:block">
-              {!isEditingInstructions && renderVisualizer()}
-            </div>
-          </div>
+      <div className="flex flex-col flex-grow items-center justify-center">
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          {renderVisualizer()}
         </div>
-
         <div className="my-4">{renderConnectionControl()}</div>
       </div>
     </div>

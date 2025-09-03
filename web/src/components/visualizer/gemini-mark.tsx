@@ -6,18 +6,33 @@ import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { AgentState } from "@livekit/components-react";
+import { useTheme } from "@/components/theme-provider";
 
-const accentColor = "#5282ed";
-const disconnectedColor = "#030303";
+// Theme-aware color function
+const getThemeColors = (theme: string) => {
+  if (theme === "light") {
+    return {
+      accentColor: "#d97706", // Softer amber-orange for light mode (less bright)
+      disconnectedColor: "#666666", // Gray for light mode
+    };
+  } else {
+    return {
+      accentColor: "#5282ed", // Blue for dark mode (original)
+      disconnectedColor: "#030303", // Almost black for dark mode
+    };
+  }
+};
 
-const Shape: React.FC<{ volume: number; state: AgentState }> = ({
+const Shape: React.FC<{ volume: number; state: AgentState; theme: string }> = ({
   volume,
   state,
+  theme,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
+  const colors = getThemeColors(theme);
 
-  const emissiveColor = useRef(new THREE.Color(accentColor));
-  const targetColor = useRef(new THREE.Color(accentColor));
+  const emissiveColor = useRef(new THREE.Color(colors.accentColor));
+  const targetColor = useRef(new THREE.Color(colors.accentColor));
   const isDisconnected = state === "disconnected";
 
   useFrame((frameState) => {
@@ -60,7 +75,7 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
       );
       meshRef.current.scale.setScalar(scale);
 
-      const targetHex = isDisconnected ? disconnectedColor : accentColor;
+      const targetHex = isDisconnected ? colors.disconnectedColor : colors.accentColor;
       targetColor.current.set(targetHex);
       emissiveColor.current.lerp(targetColor.current, 0.1);
 
@@ -107,7 +122,7 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
   };
 
   const texture = createSolidColorTexture(
-    isDisconnected ? disconnectedColor : accentColor
+    isDisconnected ? colors.disconnectedColor : colors.accentColor
   );
 
   const material = new THREE.MeshStandardMaterial({
@@ -130,11 +145,13 @@ export const GeminiMark = ({
   volume: number;
   state: AgentState;
 }) => {
+  const { theme } = useTheme();
+  
   return (
     <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
       <ambientLight intensity={1} />
       <pointLight position={[2, 0, 0]} intensity={5} />
-      <Shape volume={volume} state={state} />
+      <Shape volume={volume} state={state} theme={theme} />
       <Environment preset="night" background={false} />
       <EffectComposer>
         <Bloom

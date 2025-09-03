@@ -53,7 +53,6 @@ export function ConfigurationForm() {
   const updateConfig = useCallback(async () => {
     const values = pgState.sessionConfig;
     const attributes: { [key: string]: string } = {
-      gemini_api_key: pgState.geminiAPIKey || "",
       instructions: pgState.instructions,
       voice: values.voice,
       modalities: values.modalities,
