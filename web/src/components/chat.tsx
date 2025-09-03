@@ -10,7 +10,7 @@ import {
   useConnectionState,
   useVoiceAssistant,
 } from "@livekit/components-react";
-import { ChatControls } from "@/components/chat-controls";
+
 import { useAgent } from "@/hooks/use-agent";
 import { useConnection } from "@/hooks/use-connection";
 import { toast } from "@/hooks/use-toast";
