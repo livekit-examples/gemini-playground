@@ -10,6 +10,11 @@ export async function POST(request: Request) {
 
   try {
     playgroundState = await request.json();
+    console.log('🔗 Token API received instructions:', {
+      instructionsLength: playgroundState.instructions.length,
+      hasRecipeContext: playgroundState.instructions.includes('CURRENT COOKING SESSION'),
+      preview: playgroundState.instructions.substring(0, 150) + '...'
+    });
   } catch (error) {
     return Response.json(
       { error: "Invalid JSON in request body" },

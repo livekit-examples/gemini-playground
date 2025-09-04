@@ -5,13 +5,12 @@ import React, {
   useState,
   useCallback,
   useContext,
-  useEffect,
 } from "react";
 import { PlaygroundState } from "@/data/playground-state";
 import { usePlaygroundState } from "./use-playground-state";
 import { VoiceId } from "@/data/voices";
 
-export type ConnectFn = () => Promise<void>;
+export type ConnectFn = (customInstructions?: string) => Promise<void>;
 
 type TokenGeneratorData = {
   shouldConnect: boolean;
@@ -41,13 +40,24 @@ export const ConnectionProvider = ({
 
   const { pgState } = usePlaygroundState();
 
-  const connect = async () => {
+  const connect = async (customInstructions?: string) => {
+    // Use custom instructions if provided, otherwise use current pgState
+    const stateToSend = customInstructions 
+      ? { ...pgState, instructions: customInstructions }
+      : pgState;
+    
+    console.log('🔗 Connection hook sending instructions:', {
+      instructionsLength: stateToSend.instructions.length,
+      hasRecipeContext: stateToSend.instructions.includes('CURRENT COOKING SESSION'),
+      usingCustom: !!customInstructions
+    });
+    
     const response = await fetch("/api/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(pgState),
+      body: JSON.stringify(stateToSend),
     });
 
     if (!response.ok) {

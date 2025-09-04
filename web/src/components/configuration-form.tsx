@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form } from "@/components/ui/form";
-import { SessionConfig } from "@/components/session-config";
 import { VoiceId } from "@/data/voices";
 import { ModelId } from "@/data/models";
 import { UseFormReturn } from "react-hook-form";
@@ -22,6 +21,8 @@ import { useConnection } from "@/hooks/use-connection";
 import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ModalitiesId } from "@/data/modalities";
+import { useRecipe } from "@/hooks/use-recipe";
+import { generateRecipeAwareInstructions } from "@/lib/recipe-context-generator";
 export const ConfigurationFormSchema = z.object({
   model: z.nativeEnum(ModelId),
   modalities: z.nativeEnum(ModalitiesId),
@@ -40,6 +41,7 @@ export function ConfigurationForm() {
   const connectionState = useConnectionState();
   const { voice, disconnect, connect } = useConnection();
   const { localParticipant } = useLocalParticipant();
+  const { getRecipeContext, cookingSession } = useRecipe();
   const form = useForm<z.infer<typeof ConfigurationFormSchema>>({
     resolver: zodResolver(ConfigurationFormSchema),
     defaultValues: { ...defaultSessionConfig },
@@ -51,9 +53,47 @@ export function ConfigurationForm() {
   const { agent } = useVoiceAssistant();
 
   const updateConfig = useCallback(async () => {
+    // Skip all config updates during active cooking sessions
+    if (cookingSession && cookingSession.status === 'active') {
+      console.log('🍳 Skipping config update - cooking session is active');
+      return;
+    }
+
+    // Check if we're connected and have necessary components
+    if (connectionState !== ConnectionState.Connected) {
+      console.log('⏸️ Skipping config update - not connected');
+      return;
+    }
+
+    if (!agent?.identity) {
+      console.log('⏸️ Skipping config update - no agent identity');
+      return;
+    }
+
+    if (!localParticipant) {
+      console.log('⏸️ Skipping config update - no local participant');
+      return;
+    }
+
     const values = pgState.sessionConfig;
+    
+    // Get recipe context and generate recipe-aware instructions
+    const recipeContext = getRecipeContext();
+    console.log('🔄 ConfigurationForm: Recipe context update triggered:', {
+      hasRecipeContext: !!recipeContext,
+      recipeName: recipeContext?.recipe?.title,
+      currentStep: recipeContext?.currentStep,
+      connectionState,
+      agentIdentity: agent.identity
+    });
+    
+    const contextualInstructions = generateRecipeAwareInstructions(
+      pgState.instructions,
+      recipeContext
+    );
+    
     const attributes: { [key: string]: string } = {
-      instructions: pgState.instructions,
+      instructions: contextualInstructions,
       voice: values.voice,
       modalities: values.modalities,
       temperature: values.temperature.toString(),
@@ -61,6 +101,7 @@ export function ConfigurationForm() {
         ? values.maxOutputTokens.toString()
         : "",
     };
+
     // Check if the local participant already has attributes set
     const hadExistingAttributes =
       Object.keys(localParticipant.attributes).length > 0;
@@ -74,22 +115,21 @@ export function ConfigurationForm() {
 
     // If only voice changed, or if there were no existing attributes, don't update or show toast
     if (onlyVoiceChanged) {
-      return;
-    }
-
-    if (!agent?.identity) {
+      console.log('⏸️ Skipping config update - only voice changed or no existing attributes');
       return;
     }
 
     try {
+      console.log('📡 Sending config update to agent...');
       let response = await localParticipant.performRpc({
         destinationIdentity: agent.identity,
         method: "pg.updateConfig",
         payload: JSON.stringify(attributes),
       });
-      console.log("pg.updateConfig", response);
+      console.log("✅ pg.updateConfig response:", response);
       let responseObj = JSON.parse(response);
       if (responseObj.changed) {
+        console.log('🔄 Configuration updated successfully');
         toast({
           title: "Configuration Updated",
           description: "Your changes have been applied successfully.",
@@ -97,6 +137,7 @@ export function ConfigurationForm() {
         });
       }
     } catch (e) {
+      console.error('❌ Error updating configuration:', e);
       toast({
         title: "Error Updating Configuration",
         description:
@@ -105,11 +146,14 @@ export function ConfigurationForm() {
       });
     }
   }, [
+    cookingSession,
+    connectionState,
     pgState.sessionConfig,
     pgState.instructions,
     localParticipant,
     toast,
     agent,
+    getRecipeContext,
   ]);
 
   // Function to debounce updates when user stops interacting
@@ -136,11 +180,21 @@ export function ConfigurationForm() {
 
   useEffect(() => {
     if (ConnectionState.Connected === connectionState) {
-      handleDebouncedUpdate(); // Call debounced update when form changes
+      // Skip all updates during active cooking sessions
+      if (cookingSession && cookingSession.status === 'active') {
+        console.log('🍳 Skipping connection config update - cooking session is active');
+        return;
+      }
+      
+      // For non-cooking connections, still allow config updates
+      console.log('🔄 Non-cooking connection detected, updating config...');
+      setTimeout(() => {
+        handleDebouncedUpdate(); // Call debounced update when form changes
+      }, 1000);
     }
 
     form.reset(pgState.sessionConfig);
-  }, [pgState.sessionConfig, connectionState, handleDebouncedUpdate, form]);
+  }, [pgState.sessionConfig, connectionState, handleDebouncedUpdate, form, cookingSession]);
 
   return (
     <Form {...form}>
@@ -153,7 +207,7 @@ export function ConfigurationForm() {
           </div>
           <div className="flex-grow overflow-y-auto py-4 pt-0">
             <div className="space-y-4">
-              <SessionConfig form={form} />
+              {/* SessionConfig component removed - settings are now hardcoded */}
 
               {pgState.sessionConfig.voice !== voice &&
                 ConnectionState.Connected === connectionState && (

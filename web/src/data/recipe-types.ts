@@ -1,0 +1,202 @@
+// Recipe data types for All You Can Cook
+// All recipe management is handled in the frontend
+
+export interface Recipe {
+  id: string;
+  title: string;
+  description: string;
+  servings: number;
+  prepTime: number; // minutes
+  cookTime: number; // minutes
+  totalTime: number; // minutes (calculated: prepTime + cookTime)
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  ingredients: Ingredient[];
+  steps: CookingStep[];
+  tags: string[];
+  nutrition?: NutritionInfo;
+  imageUrl?: string;
+  author?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Ingredient {
+  id: string;
+  name: string;
+  amount: number;
+  unit: string;
+  notes?: string;
+  optional?: boolean;
+  category?: 'protein' | 'vegetable' | 'dairy' | 'grain' | 'spice' | 'other';
+}
+
+export interface CookingStep {
+  stepNumber: number;
+  instruction: string;
+  duration?: number; // minutes
+  temperature?: number; // celsius
+  tips?: string[];
+  ingredients?: string[]; // ingredient IDs used in this step
+  equipment?: string[];
+  imageUrl?: string;
+}
+
+export interface NutritionInfo {
+  calories?: number;
+  protein?: number; // grams
+  carbs?: number; // grams
+  fat?: number; // grams
+  fiber?: number; // grams
+  sugar?: number; // grams
+  sodium?: number; // milligrams
+}
+
+export interface CookingSession {
+  id: string;
+  recipeId: string;
+  currentStep: number;
+  startedAt: Date;
+  completedSteps: number[];
+  activeTimers: CookingTimer[];
+  notes: string;
+  status: 'active' | 'paused' | 'completed' | 'abandoned';
+}
+
+export interface CookingTimer {
+  id: string;
+  name: string;
+  duration: number; // seconds
+  remainingTime: number; // seconds
+  isActive: boolean;
+  stepNumber?: number;
+  createdAt: Date;
+}
+
+// Recipe context for AI assistant
+export interface RecipeContext {
+  recipe: Recipe;
+  currentStep: number;
+  completedSteps: number[];
+  activeTimers: CookingTimer[];
+  sessionNotes: string;
+}
+
+// Sample recipe for development/testing
+export const sampleRecipe: Recipe = {
+  id: "sample-pasta-carbonara",
+  title: "Classic Pasta Carbonara",
+  description: "A creamy, authentic Italian pasta dish with eggs, cheese, pancetta, and black pepper.",
+  servings: 4,
+  prepTime: 15,
+  cookTime: 20,
+  totalTime: 35,
+  difficulty: 'Medium',
+  ingredients: [
+    {
+      id: "pasta",
+      name: "Spaghetti or linguine",
+      amount: 400,
+      unit: "g",
+      category: 'grain'
+    },
+    {
+      id: "pancetta",
+      name: "Pancetta",
+      amount: 150,
+      unit: "g",
+      notes: "Diced into small cubes",
+      category: 'protein'
+    },
+    {
+      id: "eggs",
+      name: "Large eggs",
+      amount: 3,
+      unit: "whole",
+      category: 'protein'
+    },
+    {
+      id: "egg-yolk",
+      name: "Egg yolk",
+      amount: 1,
+      unit: "whole",
+      category: 'protein'
+    },
+    {
+      id: "parmesan",
+      name: "Parmesan cheese",
+      amount: 100,
+      unit: "g",
+      notes: "Freshly grated",
+      category: 'dairy'
+    },
+    {
+      id: "black-pepper",
+      name: "Black pepper",
+      amount: 1,
+      unit: "tsp",
+      notes: "Freshly ground",
+      category: 'spice'
+    },
+    {
+      id: "salt",
+      name: "Salt",
+      amount: 1,
+      unit: "tsp",
+      notes: "For pasta water",
+      category: 'spice'
+    }
+  ],
+  steps: [
+    {
+      stepNumber: 1,
+      instruction: "Bring a large pot of salted water to boil. Add pasta and cook according to package directions until al dente.",
+      duration: 10,
+      tips: ["Use plenty of water - about 4 liters for 400g pasta", "Salt the water generously - it should taste like seawater"],
+      equipment: ["Large pot", "Wooden spoon"]
+    },
+    {
+      stepNumber: 2,
+      instruction: "While pasta cooks, dice the pancetta into small cubes and cook in a large pan over medium heat until crispy.",
+      duration: 8,
+      ingredients: ["pancetta"],
+      tips: ["No oil needed - pancetta will render its own fat", "Don't overcook or it will become tough"],
+      equipment: ["Large pan or skillet"]
+    },
+    {
+      stepNumber: 3,
+      instruction: "In a bowl, whisk together the whole eggs, egg yolk, grated Parmesan, and freshly ground black pepper.",
+      ingredients: ["eggs", "egg-yolk", "parmesan", "black-pepper"],
+      tips: ["Make sure cheese is finely grated for smooth mixing", "Use room temperature eggs if possible"],
+      equipment: ["Large mixing bowl", "Whisk"]
+    },
+    {
+      stepNumber: 4,
+      instruction: "Reserve 1 cup of pasta cooking water, then drain the pasta. Immediately add hot pasta to the pan with pancetta.",
+      tips: ["Don't let the pasta cool down", "Save more pasta water than you think you'll need"],
+      equipment: ["Colander", "Measuring cup"]
+    },
+    {
+      stepNumber: 5,
+      instruction: "Remove pan from heat. Quickly add the egg mixture while tossing the pasta vigorously. Add pasta water gradually until creamy.",
+      tips: ["Work quickly to prevent eggs from scrambling", "The residual heat will cook the eggs gently", "Add pasta water slowly - you might not need it all"],
+      equipment: ["Tongs or pasta fork"]
+    },
+    {
+      stepNumber: 6,
+      instruction: "Serve immediately with extra Parmesan and black pepper. Enjoy your authentic carbonara!",
+      tips: ["Serve in warmed bowls if possible", "Carbonara waits for no one - serve immediately!"]
+    }
+  ],
+  tags: ["Italian", "Pasta", "Quick", "Comfort Food", "Traditional"],
+  nutrition: {
+    calories: 520,
+    protein: 28,
+    carbs: 45,
+    fat: 22,
+    fiber: 2,
+    sodium: 850
+  },
+  author: "All You Can Cook",
+  createdAt: new Date(),
+  updatedAt: new Date()
+};

@@ -8,11 +8,20 @@ import {
 
 import { Chat } from "@/components/chat";
 import { VoiceSelection } from "@/components/voice-selection";
+import { RecipeSelector } from "@/components/recipe-selector";
+import { CookingSession } from "@/components/cooking-session";
 import { useConnection } from "@/hooks/use-connection";
+import { useRecipe } from "@/hooks/use-recipe";
 import { AgentProvider } from "@/hooks/use-agent";
+import { ConfigurationForm } from "@/components/configuration-form";
 
 export function RoomComponent() {
   const { shouldConnect, wsUrl, token } = useConnection();
+  const { currentRecipe, cookingSession } = useRecipe();
+
+  // Show cooking session if active
+  const showCookingSession = currentRecipe && cookingSession && cookingSession.status !== 'completed';
+  
   return (
     <LiveKitRoom
       serverUrl={wsUrl}
@@ -27,14 +36,44 @@ export function RoomComponent() {
       }}
     >
       <AgentProvider>
+        {/* Hidden configuration form that handles recipe context sync */}
+        {/* <div className="hidden">
+          <ConfigurationForm />
+        </div> */}
+        
         {/* Voice selection at top - compact */}
         <div className="py-3">
           <VoiceSelection />
         </div>
         
-        {/* Main chat area - takes remaining space */}
+        {/* Main content area */}
         <div className="flex flex-col flex-grow rounded-2xl bg-card border border-border overflow-hidden">
-          <Chat />
+          {showCookingSession ? (
+            // Show cooking session interface - optimized for single screen
+            <div className="flex flex-col h-full">
+              {/* Cooking session takes most space but leaves room for chat */}
+              <div className="flex-1 overflow-y-auto p-2 min-h-0">
+                <CookingSession />
+              </div>
+              {/* Compact chat area at bottom - just the visualizer, no controls */}
+              <div className="flex-shrink-0 border-t border-border">
+                <Chat compact showControls={false} />
+              </div>
+            </div>
+          ) : (
+            // Show recipe selection or chat
+            <div className="flex flex-col h-full">
+              {!shouldConnect ? (
+                // Show recipe selector when not connected
+                <div className="flex-1 overflow-y-auto p-2">
+                  <RecipeSelector />
+                </div>
+              ) : (
+                // Show full chat when connected but no recipe
+                <Chat />
+              )}
+            </div>
+          )}
         </div>
         <RoomAudioRenderer />
         <StartAudio label="Click to allow audio playback" />

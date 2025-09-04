@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { PHProvider } from "@/hooks/posthog-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { RecipeProvider } from "@/hooks/use-recipe";
 import { Roboto } from "next/font/google";
 import dynamic from "next/dynamic";
 
@@ -35,15 +36,17 @@ export default function RootLayout({
       <body className={roboto.className}>
         <PHProvider>
           <ThemeProvider defaultTheme="dark" storageKey="all-you-can-cook-theme">
-            <PlaygroundStateProvider>
-              <ConnectionProvider>
-                <TooltipProvider>
-                  <PostHogPageView />
-                  {children}
-                  <Toaster />
-                </TooltipProvider>
-              </ConnectionProvider>
-            </PlaygroundStateProvider>
+            <RecipeProvider>
+              <PlaygroundStateProvider>
+                <ConnectionProvider>
+                  <TooltipProvider>
+                    <PostHogPageView />
+                    {children}
+                    <Toaster />
+                  </TooltipProvider>
+                </ConnectionProvider>
+              </PlaygroundStateProvider>
+            </RecipeProvider>
           </ThemeProvider>
         </PHProvider>
       </body>

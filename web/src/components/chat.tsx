@@ -16,7 +16,12 @@ import { useConnection } from "@/hooks/use-connection";
 import { toast } from "@/hooks/use-toast";
 import { GeminiVisualizer } from "@/components/visualizer/gemini-visualizer";
 
-export function Chat() {
+interface ChatProps {
+  compact?: boolean;
+  showControls?: boolean;
+}
+
+export function Chat({ compact = false, showControls = true }: ChatProps) {
   const connectionState = useConnectionState();
   const { audioTrack, state } = useVoiceAssistant();
   const [isChatRunning, setIsChatRunning] = useState(false);
@@ -83,7 +88,7 @@ export function Chat() {
 
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
-      <div className="h-[280px] lg:h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
+      <div className={compact ? "h-[120px] w-full" : "h-[280px] lg:h-[400px] mt-16 md:mt-0 lg:pb-24 w-full"}>
         <GeminiVisualizer agentState={state} agentTrackRef={audioTrack} />
       </div>
     </div>
@@ -104,12 +109,14 @@ export function Chat() {
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4">
+    <div className={compact ? "flex flex-col h-full overflow-hidden p-2" : "flex flex-col h-full overflow-hidden p-2 lg:p-4"}>
       <div className="flex flex-col flex-grow items-center justify-center">
         <div className="w-full h-full flex flex-col items-center justify-center">
           {renderVisualizer()}
         </div>
-        <div className="my-4">{renderConnectionControl()}</div>
+        {showControls && (
+          <div className={compact ? "my-2" : "my-4"}>{renderConnectionControl()}</div>
+        )}
       </div>
     </div>
   );
