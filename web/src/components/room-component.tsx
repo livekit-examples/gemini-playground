@@ -7,7 +7,6 @@ import {
 } from "@livekit/components-react";
 
 import { Chat } from "@/components/chat";
-import { VoiceSelection } from "@/components/voice-selection";
 import { RecipeSelector } from "@/components/recipe-selector";
 import { CookingSession } from "@/components/cooking-session";
 import { useConnection } from "@/hooks/use-connection";
@@ -41,10 +40,6 @@ export function RoomComponent() {
           <ConfigurationForm />
         </div> */}
         
-        {/* Voice selection at top - compact */}
-        <div className="py-3">
-          <VoiceSelection />
-        </div>
         
         {/* Main content area */}
         <div className="flex flex-col flex-grow rounded-2xl bg-card border border-border overflow-hidden">

@@ -5,11 +5,11 @@ export interface Recipe {
   id: string;
   title: string;
   description: string;
-  servings: number;
-  prepTime: number; // minutes
-  cookTime: number; // minutes
-  totalTime: number; // minutes (calculated: prepTime + cookTime)
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  servings?: number; // Optional - not provided by all APIs
+  prepTime?: number; // minutes - Optional - not provided by all APIs
+  cookTime?: number; // minutes - Optional - not provided by all APIs
+  totalTime?: number; // minutes (calculated: prepTime + cookTime) - Optional
+  difficulty?: 'Easy' | 'Medium' | 'Hard'; // Optional - not provided by all APIs
   ingredients: Ingredient[];
   steps: CookingStep[];
   tags: string[];
@@ -18,6 +18,13 @@ export interface Recipe {
   author?: string;
   createdAt: Date;
   updatedAt: Date;
+  
+  // Additional fields for API integration
+  category?: string; // e.g., "Dessert", "Main Course"
+  cuisine?: string; // e.g., "Italian", "Chinese"
+  source?: string; // e.g., "TheMealDB", "User Created"
+  sourceUrl?: string; // URL to original recipe
+  isPreview?: boolean; // True if this is a preview with limited data
 }
 
 export interface Ingredient {

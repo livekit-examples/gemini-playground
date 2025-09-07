@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { Recipe, RecipeContext } from "@/data/recipe-types";
-import { hardcodedRecipes } from "@/data/hardcoded-recipes";
 import { useRecipe } from "@/hooks/use-recipe";
 import { useConnection } from "@/hooks/use-connection";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
 import { generateRecipeAwareInstructions } from "@/lib/recipe-context-generator";
+import { useRecipeCache } from "@/services/recipe-cache";
+import { mealDBApi } from "@/services/mealdb-api";
+import { transformMealDBToRecipe } from "@/utils/mealdb-transformer";
+import { RecipeBrowser } from "@/components/recipe-browser";
+import { VoiceSelection } from "@/components/voice-selection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, ChefHat, ArrowLeft } from "lucide-react";
@@ -21,9 +25,34 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
   const { startCookingSession, getRecipeContext } = useRecipe();
   const { connect } = useConnection();
   const { pgState, dispatch } = usePlaygroundState();
+  const { cacheRecipe } = useRecipeCache();
 
-  const handleRecipeClick = (recipe: Recipe) => {
-    setSelectedRecipe(recipe);
+  const handleRecipeClick = async (recipe: Recipe) => {
+    // If it's a preview recipe, load the full details
+    if (recipe.isPreview) {
+      try {
+        const fullMeal = await mealDBApi.getMealById(recipe.id);
+        if (fullMeal) {
+          const fullRecipe = transformMealDBToRecipe(fullMeal);
+          // Cache the full recipe for offline access (only on client side)
+          cacheRecipe(fullRecipe);
+          setSelectedRecipe(fullRecipe);
+        } else {
+          // Fallback to preview if full details fail to load
+          cacheRecipe(recipe);
+          setSelectedRecipe(recipe);
+        }
+      } catch (error) {
+        console.warn('Failed to load full recipe details, using preview:', error);
+        // Fallback to preview if full details fail to load
+        cacheRecipe(recipe);
+        setSelectedRecipe(recipe);
+      }
+    } else {
+      // Full recipe already, just use it
+      cacheRecipe(recipe);
+      setSelectedRecipe(recipe);
+    }
   };
 
   const handleStartCooking = async () => {
@@ -127,20 +156,26 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
 
           {/* Quick Stats */}
           <div className="flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{selectedRecipe.totalTime} min</span>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>{selectedRecipe.servings} serving{selectedRecipe.servings > 1 ? 's' : ''}</span>
-            </div>
-            <Badge variant={
-              selectedRecipe.difficulty === 'Easy' ? 'default' :
-              selectedRecipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
-            }>
-              {selectedRecipe.difficulty}
-            </Badge>
+            {selectedRecipe.totalTime && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>{selectedRecipe.totalTime} min</span>
+              </div>
+            )}
+            {selectedRecipe.servings && (
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                <span>{selectedRecipe.servings} serving{selectedRecipe.servings > 1 ? 's' : ''}</span>
+              </div>
+            )}
+            {selectedRecipe.difficulty && (
+              <Badge variant={
+                selectedRecipe.difficulty === 'Easy' ? 'default' :
+                selectedRecipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
+              }>
+                {selectedRecipe.difficulty}
+              </Badge>
+            )}
           </div>
 
           {/* Tags */}
@@ -171,35 +206,29 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
           </div>
         </div>
 
-        {/* Steps Preview */}
+        {/* Instructions */}
         <div className="space-y-2">
-          <h4 className="font-semibold text-foreground">Steps ({selectedRecipe.steps.length})</h4>
-          <div className="space-y-3">
-            {selectedRecipe.steps.map((step) => (
-              <div key={step.stepNumber} className="flex gap-3 text-sm">
-                <div className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                  {step.stepNumber}
-                </div>
-                <div className="flex-1">
-                  <p className="text-foreground text-sm leading-relaxed">
-                    {step.instruction}
-                  </p>
-                  {step.duration && (
-                    <p className="text-muted-foreground text-xs mt-1">
-                      ⏱️ {step.duration} minutes
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+          <h4 className="font-semibold text-foreground">Instructions</h4>
+          <div className="bg-muted/50 rounded-lg p-4">
+            <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">
+              {selectedRecipe.steps[0]?.instruction || 'No instructions available'}
+            </p>
           </div>
+        </div>
+
+        {/* Voice Selection - Choose Acai's voice */}
+        <div className="mt-6 mb-4">
+          <div className="text-sm font-medium text-foreground mb-3 text-center">
+            Choose Acai's Voice
+          </div>
+          <VoiceSelection />
         </div>
 
         {/* Start Cooking Button */}
         <Button 
           onClick={handleStartCooking}
           disabled={isConnecting}
-          className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3"
+          className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3"
           size="lg"
         >
           <ChefHat className="mr-2 h-5 w-5" />
@@ -209,70 +238,6 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
     );
   }
 
-  // Recipe List View
-  return (
-    <div className="w-full max-w-md mx-auto p-4 space-y-4">
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-foreground mb-2">Choose Your Recipe</h2>
-        <p className="text-sm text-muted-foreground">Select a recipe to start cooking with Acai</p>
-      </div>
-
-      <div className="space-y-4">
-        {hardcodedRecipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            onClick={() => handleRecipeClick(recipe)}
-            className="bg-card border border-border rounded-lg p-4 cursor-pointer hover:bg-accent transition-colors"
-          >
-            <div className="flex gap-3">
-              {/* Recipe Image */}
-              <div className="flex-shrink-0 w-16 h-16 bg-muted rounded-lg overflow-hidden">
-                {recipe.imageUrl ? (
-                  <img
-                    src={recipe.imageUrl}
-                    alt={recipe.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <ChefHat className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-
-              {/* Recipe Info */}
-              <div className="flex-1 space-y-1">
-                <h3 className="font-semibold text-foreground text-sm">{recipe.title}</h3>
-                <p className="text-xs text-muted-foreground line-clamp-2">{recipe.description}</p>
-                
-                {/* Quick Stats */}
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{recipe.totalTime}m</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    <span>{recipe.servings}</span>
-                  </div>
-                  <Badge variant="outline" className="text-xs py-0 px-2 h-5">
-                    {recipe.difficulty}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="text-center pt-4">
-        <p className="text-xs text-muted-foreground">
-          More recipes coming soon! 🍳
-        </p>
-      </div>
-    </div>
-  );
+  // Recipe List View - Use the new RecipeBrowser component
+  return <RecipeBrowser onRecipeSelected={handleRecipeClick} />;
 }
