@@ -22,7 +22,8 @@ import {
   AlertCircle,
   RefreshCw,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  X
 } from "lucide-react";
 
 interface RecipeBrowserProps {
@@ -57,9 +58,17 @@ interface TabState {
     loaded: boolean;
     pagination: PaginationState;
   };
+  search: {
+    allRecipes: Recipe[]; // Store all search results
+    loaded: boolean;
+    pagination: PaginationState;
+    query: string; // Store the search query
+  };
 }
 
 export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
+  console.log('🔄 RecipeBrowser component rendering/re-rendering');
+  
   const [browseState, setBrowseState] = useState<BrowseState>({
     recipes: [],
     loading: false,
@@ -78,6 +87,12 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       allRecipes: [], 
       loaded: false, 
       pagination: { currentPage: 1, itemsPerPage: 8, totalItems: 0 }
+    },
+    search: {
+      allRecipes: [],
+      loaded: false,
+      pagination: { currentPage: 1, itemsPerPage: 8, totalItems: 0 },
+      query: ''
     },
   });
   
@@ -111,6 +126,8 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const updateBrowseState = useCallback((update: Partial<BrowseState>) => {
+    console.log('📝 updateBrowseState called with:', update);
+    console.trace('📍 updateBrowseState call stack');
     setBrowseState(prev => ({ ...prev, ...update }));
   }, []);
 
@@ -122,13 +139,31 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const loadRandomRecipes = useCallback(async () => {
+    console.log('🎲 loadRandomRecipes called');
+    console.log('🎲 Current state:', { 
+      loading: browseState.loading, 
+      randomLoaded: tabState.random.loaded,
+      activeTab 
+    });
+    console.trace('🎲 loadRandomRecipes call stack');
+    
+    // Prevent double loading by checking if already loading or loaded
+    if (browseState.loading || tabState.random.loaded) {
+      console.log('❌ Skipping loadRandomRecipes - already loading or loaded');
+      return;
+    }
+    
+    console.log('✅ Loading random recipes...');
     updateBrowseState({ loading: true, error: null });
     
     try {
       const meals = await mealDBApi.getRandomMeals(8);
       const recipes = transformMealDBToRecipePreviews(meals); // Use preview format for consistency
       
+      console.log('🎲 API call successful, got', recipes.length, 'recipes');
+      
       // Update tab state
+      console.log('🎲 Updating tabState.random.loaded = true');
       setTabState(prev => ({
         ...prev,
         random: { recipes, loaded: true }
@@ -136,14 +171,17 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       
       // Update browse state if currently on random tab
       if (activeTab === "random") {
+        console.log('🎲 Updating browseState with recipes (activeTab is random)');
         updateBrowseState({ 
           recipes, 
           loading: false, 
           hasSearched: true 
         });
       } else {
+        console.log('🎲 Not on random tab, just setting loading=false');
         updateBrowseState({ loading: false });
       }
+      console.log('✅ Random recipes loaded successfully');
     } catch (error) {
       const errorMessage = error instanceof MealDBApiError ? error.message : 'Failed to load random recipes';
       updateBrowseState({ 
@@ -151,29 +189,78 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: errorMessage,
         hasSearched: true 
       });
+      console.error('Failed to load random recipes:', error);
     }
-  }, [activeTab, updateBrowseState, setTabState]);
+  }, [activeTab, updateBrowseState, browseState.loading, tabState.random.loaded]);
 
   // Load random recipes on initial mount only
   useEffect(() => {
-    if (activeTab === "random" && !tabState.random.loaded) {
+    console.log('🔥 useEffect #1 (loadRandomRecipes) triggered');
+    console.log('🔥 useEffect #1 state:', { 
+      activeTab, 
+      loaded: tabState.random.loaded, 
+      loading: browseState.loading 
+    });
+    console.trace('🔥 useEffect #1 call stack');
+    
+    if (activeTab === "random" && !tabState.random.loaded && !browseState.loading) {
+      console.log('✅ useEffect #1 conditions met, calling loadRandomRecipes');
       loadRandomRecipes();
+    } else {
+      console.log('❌ useEffect #1 conditions not met');
     }
-  }, [activeTab, tabState.random.loaded, loadRandomRecipes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, tabState.random.loaded, browseState.loading]); // Added loading state to prevent race conditions
 
   // Update browseState when switching tabs or pagination changes
   useEffect(() => {
+    console.log('🔥 useEffect #2 (tab switching) triggered');
+    console.log('🔥 useEffect #2 state:', { 
+      activeTab,
+      searchLoaded: tabState.search.loaded,
+      searchQuery: tabState.search.query,
+      currentSearchQuery: searchQuery.trim(),
+      loading: browseState.loading
+    });
+    
+    // CRITICAL FIX: Don't interfere if we're currently loading
+    if (browseState.loading) {
+      console.log('🔥 useEffect #2 SKIPPING - currently loading, avoiding interference');
+      return;
+    }
+    
+    // Check if we have search results to show
+    if (tabState.search.loaded && tabState.search.query === searchQuery.trim()) {
+      console.log('🔥 useEffect #2 showing search results');
+      // Show search results with pagination
+      const recipes = getPaginatedRecipes(tabState.search.allRecipes, tabState.search.pagination);
+      updateBrowseState({
+        recipes,
+        hasSearched: true,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
+    // Otherwise, show tab-specific content
+    console.log('🔥 useEffect #2 showing tab-specific content');
     const currentTabData = tabState[activeTab as keyof TabState];
+    console.log('🔥 useEffect #2 currentTabData.loaded:', currentTabData.loaded);
+    
     if (currentTabData.loaded) {
+      console.log('🔥 useEffect #2 tab data is loaded, updating browseState');
       let recipes: Recipe[];
       
       if (activeTab === 'random') {
         // Random tab doesn't use pagination
         recipes = (currentTabData as typeof tabState.random).recipes;
+        console.log('🔥 useEffect #2 using random recipes:', recipes.length);
       } else {
         // Categories and countries use pagination
         const paginatedTabData = currentTabData as typeof tabState.categories | typeof tabState.countries;
         recipes = getPaginatedRecipes(paginatedTabData.allRecipes, paginatedTabData.pagination);
+        console.log('🔥 useEffect #2 using paginated recipes:', recipes.length);
       }
       
       updateBrowseState({
@@ -183,7 +270,8 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: null,
       });
     } else {
-      // Clear recipes when switching to unloaded tab
+      console.log('🔥 useEffect #2 tab data not loaded, clearing recipes');
+      // Clear recipes when switching to unloaded tab (but only if not loading)
       updateBrowseState({
         recipes: [],
         hasSearched: false,
@@ -191,18 +279,47 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: null,
       });
     }
-  }, [activeTab, tabState, updateBrowseState, getPaginatedRecipes]);
+  }, [activeTab, tabState, updateBrowseState, getPaginatedRecipes, searchQuery, browseState.loading]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
+    
+    // Clear other filters when searching
+    setSelectedCategory("");
+    setSelectedArea("");
+    
+    // Clear other filter states
+    setTabState(prev => ({
+      ...prev,
+      categories: { ...prev.categories, loaded: false },
+      countries: { ...prev.countries, loaded: false }
+    }));
     
     updateBrowseState({ loading: true, error: null });
     
     try {
       const meals = await mealDBApi.searchByName(searchQuery.trim());
-      const recipes = transformMealDBToRecipes(meals);
+      const allRecipes = transformMealDBToRecipePreviews(meals); // Use preview format
+      
+      // Update search state with all results and reset pagination
+      const newPagination: PaginationState = {
+        currentPage: 1,
+        itemsPerPage: 8,
+        totalItems: allRecipes.length
+      };
+      
+      setTabState(prev => ({
+        ...prev,
+        search: { 
+          allRecipes, 
+          loaded: true, 
+          pagination: newPagination,
+          query: searchQuery.trim()
+        }
+      }));
+      
+      // The useEffect will handle updating browseState with paginated results
       updateBrowseState({ 
-        recipes, 
         loading: false, 
         hasSearched: true 
       });
@@ -216,7 +333,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   };
 
   const handleCategoryFilter = async (category: string) => {
+    // Clear other filters when selecting a category
+    setSelectedArea("");
+    setSearchQuery("");
     setSelectedCategory(category);
+    
+    // Clear other filter states
+    setTabState(prev => ({
+      ...prev,
+      search: { ...prev.search, loaded: false, query: '' },
+      countries: { ...prev.countries, loaded: false }
+    }));
+    
     updateBrowseState({ loading: true, error: null });
     
     try {
@@ -254,7 +382,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   };
 
   const handleAreaFilter = async (area: string) => {
+    // Clear other filters when selecting an area
+    setSelectedCategory("");
+    setSearchQuery("");
     setSelectedArea(area);
+    
+    // Clear other filter states
+    setTabState(prev => ({
+      ...prev,
+      search: { ...prev.search, loaded: false, query: '' },
+      categories: { ...prev.categories, loaded: false }
+    }));
+    
     updateBrowseState({ loading: true, error: null });
     
     try {
@@ -298,7 +437,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   };
 
   // Pagination handlers
-  const handlePageChange = useCallback((newPage: number, tabType: 'categories' | 'countries') => {
+  const handlePageChange = useCallback((newPage: number, tabType: 'categories' | 'countries' | 'search') => {
     setTabState(prev => ({
       ...prev,
       [tabType]: {
@@ -322,22 +461,89 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const getCurrentPagination = useCallback((): PaginationState | null => {
+    // If we have search results, show search pagination
+    if (tabState.search.loaded && tabState.search.query === searchQuery.trim()) {
+      return tabState.search.pagination;
+    }
+    
+    // Otherwise show tab-specific pagination
     if (activeTab === 'categories' && tabState.categories.loaded) {
       return tabState.categories.pagination;
     } else if (activeTab === 'countries' && tabState.countries.loaded) {
       return tabState.countries.pagination;
     }
     return null;
-  }, [activeTab, tabState]);
+  }, [activeTab, tabState, searchQuery]);
+
+  // Get current pagination context (search takes priority)
+  const getCurrentPaginationContext = useCallback((): 'search' | 'categories' | 'countries' | null => {
+    if (tabState.search.loaded && tabState.search.query === searchQuery.trim()) {
+      return 'search';
+    }
+    if (activeTab === 'categories' && tabState.categories.loaded) {
+      return 'categories';
+    }
+    if (activeTab === 'countries' && tabState.countries.loaded) {
+      return 'countries';
+    }
+    return null;
+  }, [activeTab, tabState, searchQuery]);
 
   const clearFilters = () => {
     setSelectedCategory("");
     setSelectedArea("");
     setSearchQuery("");
+    // Clear search results from tab state
+    setTabState(prev => ({
+      ...prev,
+      search: { ...prev.search, loaded: false, query: '' }
+    }));
     updateBrowseState({ 
       recipes: [], 
       hasSearched: false, 
       error: null 
+    });
+  };
+
+  const removeSearchFilter = () => {
+    setSearchQuery("");
+    // Clear search results from tab state
+    setTabState(prev => ({
+      ...prev,
+      search: { ...prev.search, loaded: false, query: '' }
+    }));
+    // This will trigger the useEffect to show tab content instead
+  };
+
+  const removeCategoryFilter = () => {
+    setSelectedCategory("");
+    // Clear categories tab data to force reload when switching back
+    setTabState(prev => ({
+      ...prev,
+      categories: { ...prev.categories, loaded: false }
+    }));
+    // Return to default tab state
+    updateBrowseState({
+      recipes: [],
+      hasSearched: false,
+      loading: false,
+      error: null,
+    });
+  };
+
+  const removeAreaFilter = () => {
+    setSelectedArea("");
+    // Clear countries tab data to force reload when switching back
+    setTabState(prev => ({
+      ...prev,
+      countries: { ...prev.countries, loaded: false }
+    }));
+    // Return to default tab state
+    updateBrowseState({
+      recipes: [],
+      hasSearched: false,
+      loading: false,
+      error: null,
     });
   };
 
@@ -389,7 +595,23 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={loadRandomRecipes}
+              onClick={() => {
+                console.log('🔄 Refresh button clicked');
+                console.log('🔄 Current state before refresh:', {
+                  loading: browseState.loading,
+                  loaded: tabState.random.loaded
+                });
+                // Force reload by clearing the loaded state first
+                setTabState(prev => ({
+                  ...prev,
+                  random: { ...prev.random, loaded: false }
+                }));
+                // Small delay to ensure state is updated
+                setTimeout(() => {
+                  console.log('🔄 Calling loadRandomRecipes after timeout');
+                  loadRandomRecipes();
+                }, 10);
+              }}
               disabled={browseState.loading}
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${browseState.loading ? 'animate-spin' : ''}`} />
@@ -448,13 +670,34 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-muted-foreground">Active filters:</span>
           {searchQuery && (
-            <Badge variant="secondary">Search: {searchQuery}</Badge>
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+              onClick={removeSearchFilter}
+            >
+              Search: {searchQuery}
+              <X className="h-3 w-3" />
+            </Badge>
           )}
           {selectedCategory && (
-            <Badge variant="secondary">Category: {selectedCategory}</Badge>
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+              onClick={removeCategoryFilter}
+            >
+              Category: {selectedCategory}
+              <X className="h-3 w-3" />
+            </Badge>
           )}
           {selectedArea && (
-            <Badge variant="secondary">Country: {selectedArea}</Badge>
+            <Badge 
+              variant="secondary" 
+              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+              onClick={removeAreaFilter}
+            >
+              Country: {selectedArea}
+              <X className="h-3 w-3" />
+            </Badge>
           )}
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear all
@@ -584,6 +827,9 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
             
             const totalPages = Math.ceil(pagination.totalItems / pagination.itemsPerPage);
             const currentPage = pagination.currentPage;
+            const paginationContext = getCurrentPaginationContext();
+            
+            if (!paginationContext) return null;
             
             return (
               <div className="pt-4 space-y-3">
@@ -598,7 +844,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePageChange(1, activeTab as 'categories' | 'countries')}
+                    onClick={() => handlePageChange(1, paginationContext)}
                     disabled={currentPage <= 1}
                     className="h-8 px-1.5 text-xs"
                   >
@@ -610,7 +856,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePageChange(currentPage - 1, activeTab as 'categories' | 'countries')}
+                    onClick={() => handlePageChange(currentPage - 1, paginationContext)}
                     disabled={currentPage <= 1}
                     className="h-8 px-2 text-xs"
                   >
@@ -638,7 +884,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
                           variant={currentPage === pageNum ? "default" : "outline"}
                           size="sm"
                           className="w-7 h-8 p-0 text-xs"
-                          onClick={() => handlePageChange(pageNum, activeTab as 'categories' | 'countries')}
+                          onClick={() => handlePageChange(pageNum, paginationContext)}
                         >
                           {pageNum}
                         </Button>
@@ -650,7 +896,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePageChange(currentPage + 1, activeTab as 'categories' | 'countries')}
+                    onClick={() => handlePageChange(currentPage + 1, paginationContext)}
                     disabled={currentPage >= totalPages}
                     className="h-8 px-2 text-xs"
                   >
@@ -662,7 +908,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handlePageChange(totalPages, activeTab as 'categories' | 'countries')}
+                    onClick={() => handlePageChange(totalPages, paginationContext)}
                     disabled={currentPage >= totalPages}
                     className="h-8 px-1.5 text-xs"
                   >
@@ -684,7 +930,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
           <p className="text-muted-foreground mb-6">
             Search for recipes, browse by category, or discover random dishes from around the world.
           </p>
-          <Button onClick={loadRandomRecipes} className="bg-orange-600 hover:bg-orange-700">
+          <Button 
+            onClick={() => {
+              console.log('🎯 Show Random Recipes button clicked');
+              console.log('🎯 Current state before welcome button:', {
+                loading: browseState.loading,
+                loaded: tabState.random.loaded,
+                hasSearched: browseState.hasSearched
+              });
+              loadRandomRecipes();
+            }} 
+            className="bg-orange-600 hover:bg-orange-700"
+          >
             <Shuffle className="h-4 w-4 mr-2" />
             Show Random Recipes
           </Button>
