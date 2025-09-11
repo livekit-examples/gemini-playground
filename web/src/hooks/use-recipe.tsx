@@ -77,10 +77,18 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
   // Timer management
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveTimers(timers => 
-        timers.map(timer => {
+      setActiveTimers(timers => {
+        // Check if any timers actually need updating
+        const hasActiveTimers = timers.some(timer => timer.isActive && timer.remainingTime > 0);
+        if (!hasActiveTimers) {
+          return timers; // No change, prevent re-render
+        }
+        
+        let hasChanges = false;
+        const updatedTimers = timers.map(timer => {
           if (timer.isActive && timer.remainingTime > 0) {
             const newRemainingTime = timer.remainingTime - 1;
+            hasChanges = true;
             
             // Timer finished
             if (newRemainingTime === 0) {
@@ -101,8 +109,11 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
             return { ...timer, remainingTime: newRemainingTime };
           }
           return timer;
-        })
-      );
+        });
+        
+        // Only return new array if there were actual changes
+        return hasChanges ? updatedTimers : timers;
+      });
     }, 1000);
 
     return () => clearInterval(interval);

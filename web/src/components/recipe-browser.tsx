@@ -67,7 +67,6 @@ interface TabState {
 }
 
 export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
-  console.log('🔄 RecipeBrowser component rendering/re-rendering');
   
   const [browseState, setBrowseState] = useState<BrowseState>({
     recipes: [],
@@ -75,6 +74,9 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     error: null,
     hasSearched: false,
   });
+  
+  // Use ref to track loading state and prevent race conditions
+  const loadingRef = useRef(false);
 
   const [tabState, setTabState] = useState<TabState>({
     random: { recipes: [], loaded: false },
@@ -126,8 +128,6 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const updateBrowseState = useCallback((update: Partial<BrowseState>) => {
-    console.log('📝 updateBrowseState called with:', update);
-    console.trace('📍 updateBrowseState call stack');
     setBrowseState(prev => ({ ...prev, ...update }));
   }, []);
 
@@ -139,31 +139,32 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const loadRandomRecipes = useCallback(async () => {
-    console.log('🎲 loadRandomRecipes called');
-    console.log('🎲 Current state:', { 
-      loading: browseState.loading, 
-      randomLoaded: tabState.random.loaded,
-      activeTab 
-    });
-    console.trace('🎲 loadRandomRecipes call stack');
-    
-    // Prevent double loading by checking if already loading or loaded
-    if (browseState.loading || tabState.random.loaded) {
-      console.log('❌ Skipping loadRandomRecipes - already loading or loaded');
+    // Prevent double loading using ref
+    if (loadingRef.current) {
       return;
     }
     
-    console.log('✅ Loading random recipes...');
-    updateBrowseState({ loading: true, error: null });
+    // Check if random recipes are already loaded
+    setTabState(currentTabState => {
+      if (currentTabState.random.loaded) {
+        return currentTabState;
+      }
+      
+      // Set loading flag
+      loadingRef.current = true;
+      updateBrowseState({ loading: true, error: null });
+      
+      return currentTabState;
+    });
     
     try {
       const meals = await mealDBApi.getRandomMeals(8);
       const recipes = transformMealDBToRecipePreviews(meals); // Use preview format for consistency
       
-      console.log('🎲 API call successful, got', recipes.length, 'recipes');
+      // Reset loading flag
+      loadingRef.current = false;
       
       // Update tab state
-      console.log('🎲 Updating tabState.random.loaded = true');
       setTabState(prev => ({
         ...prev,
         random: { recipes, loaded: true }
@@ -171,18 +172,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       
       // Update browse state if currently on random tab
       if (activeTab === "random") {
-        console.log('🎲 Updating browseState with recipes (activeTab is random)');
         updateBrowseState({ 
           recipes, 
           loading: false, 
           hasSearched: true 
         });
       } else {
-        console.log('🎲 Not on random tab, just setting loading=false');
         updateBrowseState({ loading: false });
       }
-      console.log('✅ Random recipes loaded successfully');
     } catch (error) {
+      // Reset loading flag on error
+      loadingRef.current = false;
+      
       const errorMessage = error instanceof MealDBApiError ? error.message : 'Failed to load random recipes';
       updateBrowseState({ 
         loading: false, 
@@ -191,47 +192,25 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       });
       console.error('Failed to load random recipes:', error);
     }
-  }, [activeTab, updateBrowseState, browseState.loading, tabState.random.loaded]);
+  }, [activeTab, updateBrowseState]);
 
   // Load random recipes on initial mount only
   useEffect(() => {
-    console.log('🔥 useEffect #1 (loadRandomRecipes) triggered');
-    console.log('🔥 useEffect #1 state:', { 
-      activeTab, 
-      loaded: tabState.random.loaded, 
-      loading: browseState.loading 
-    });
-    console.trace('🔥 useEffect #1 call stack');
-    
     if (activeTab === "random" && !tabState.random.loaded && !browseState.loading) {
-      console.log('✅ useEffect #1 conditions met, calling loadRandomRecipes');
       loadRandomRecipes();
-    } else {
-      console.log('❌ useEffect #1 conditions not met');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, tabState.random.loaded, browseState.loading]); // Added loading state to prevent race conditions
+  }, [activeTab, tabState.random.loaded, browseState.loading]);
 
   // Update browseState when switching tabs or pagination changes
   useEffect(() => {
-    console.log('🔥 useEffect #2 (tab switching) triggered');
-    console.log('🔥 useEffect #2 state:', { 
-      activeTab,
-      searchLoaded: tabState.search.loaded,
-      searchQuery: tabState.search.query,
-      currentSearchQuery: searchQuery.trim(),
-      loading: browseState.loading
-    });
-    
     // CRITICAL FIX: Don't interfere if we're currently loading
     if (browseState.loading) {
-      console.log('🔥 useEffect #2 SKIPPING - currently loading, avoiding interference');
       return;
     }
     
     // Check if we have search results to show
     if (tabState.search.loaded && tabState.search.query === searchQuery.trim()) {
-      console.log('🔥 useEffect #2 showing search results');
       // Show search results with pagination
       const recipes = getPaginatedRecipes(tabState.search.allRecipes, tabState.search.pagination);
       updateBrowseState({
@@ -244,23 +223,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     }
 
     // Otherwise, show tab-specific content
-    console.log('🔥 useEffect #2 showing tab-specific content');
     const currentTabData = tabState[activeTab as keyof TabState];
-    console.log('🔥 useEffect #2 currentTabData.loaded:', currentTabData.loaded);
     
     if (currentTabData.loaded) {
-      console.log('🔥 useEffect #2 tab data is loaded, updating browseState');
       let recipes: Recipe[];
       
       if (activeTab === 'random') {
         // Random tab doesn't use pagination
         recipes = (currentTabData as typeof tabState.random).recipes;
-        console.log('🔥 useEffect #2 using random recipes:', recipes.length);
       } else {
         // Categories and countries use pagination
         const paginatedTabData = currentTabData as typeof tabState.categories | typeof tabState.countries;
         recipes = getPaginatedRecipes(paginatedTabData.allRecipes, paginatedTabData.pagination);
-        console.log('🔥 useEffect #2 using paginated recipes:', recipes.length);
       }
       
       updateBrowseState({
@@ -270,7 +244,6 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: null,
       });
     } else {
-      console.log('🔥 useEffect #2 tab data not loaded, clearing recipes');
       // Clear recipes when switching to unloaded tab (but only if not loading)
       updateBrowseState({
         recipes: [],
@@ -279,7 +252,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: null,
       });
     }
-  }, [activeTab, tabState, updateBrowseState, getPaginatedRecipes, searchQuery, browseState.loading]);
+  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery, browseState.loading]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -596,19 +569,17 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
               variant="outline" 
               size="sm" 
               onClick={() => {
-                console.log('🔄 Refresh button clicked');
-                console.log('🔄 Current state before refresh:', {
-                  loading: browseState.loading,
-                  loaded: tabState.random.loaded
-                });
+                // Reset loading ref and state
+                loadingRef.current = false;
+                
                 // Force reload by clearing the loaded state first
                 setTabState(prev => ({
                   ...prev,
                   random: { ...prev.random, loaded: false }
                 }));
+                
                 // Small delay to ensure state is updated
                 setTimeout(() => {
-                  console.log('🔄 Calling loadRandomRecipes after timeout');
                   loadRandomRecipes();
                 }, 10);
               }}
@@ -932,12 +903,6 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
           </p>
           <Button 
             onClick={() => {
-              console.log('🎯 Show Random Recipes button clicked');
-              console.log('🎯 Current state before welcome button:', {
-                loading: browseState.loading,
-                loaded: tabState.random.loaded,
-                hasSearched: browseState.hasSearched
-              });
               loadRandomRecipes();
             }} 
             className="bg-orange-600 hover:bg-orange-700"
