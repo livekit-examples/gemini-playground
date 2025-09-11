@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "All You Can Cook - Your AI Cooking Assistant",
   description: "Experience interactive cooking with your personal AI chef assistant. Get step-by-step guidance, answer questions, and discover new recipes through natural conversation.",
   keywords: ["AI cooking", "cooking assistant", "recipe guide", "interactive cooking", "voice cooking assistant"],
+  icons: {
+    icon: '/logo.ico',
+    shortcut: '/logo.ico',
+    apple: '/logo.ico',
+  },
 };
 
 export default function RootLayout({

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { HeroSection } from '@/components/hero-section';
 import { MeetAcaiSection } from '@/components/meet-acai-section';
 import { FeaturesSection } from '@/components/features-section';
