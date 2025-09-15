@@ -12,7 +12,6 @@ import { CookingSession } from "@/components/cooking-session";
 import { useConnection } from "@/hooks/use-connection";
 import { useRecipe } from "@/hooks/use-recipe";
 import { AgentProvider } from "@/hooks/use-agent";
-import { ConfigurationForm } from "@/components/configuration-form";
 
 export function RoomComponent() {
   const { shouldConnect, wsUrl, token } = useConnection();
@@ -35,12 +34,6 @@ export function RoomComponent() {
       }}
     >
       <AgentProvider>
-        {/* Hidden configuration form that handles recipe context sync */}
-        {/* <div className="hidden">
-          <ConfigurationForm />
-        </div> */}
-        
-        
         {/* Main content area */}
         <div className="flex flex-col flex-grow rounded-2xl bg-card border border-border overflow-hidden">
           {showCookingSession ? (
@@ -52,7 +45,7 @@ export function RoomComponent() {
               </div>
               {/* Compact chat area at bottom - just the visualizer, no controls */}
               <div className="flex-shrink-0 border-t border-border">
-                <Chat compact showControls={false} />
+                <Chat compact showControls={true} />
               </div>
             </div>
           ) : (

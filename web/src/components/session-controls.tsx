@@ -114,8 +114,8 @@ export function SessionControls() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Button variant="destructive" onClick={disconnect}>
-        Disconnect
+      <Button variant="outline" size="sm" className="px-4" onClick={disconnect}>
+        Pause Conversation
       </Button>
     </div>
   );

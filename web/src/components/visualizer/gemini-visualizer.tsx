@@ -24,14 +24,11 @@ export function GeminiVisualizer({
   
   return (
     <div
-      className="flex h-full w-full items-center justify-center relative"
+      className="flex h-full w-full relative"
       style={{
         perspective: "1000px",
       }}
     >
-      <div className="absolute z-0 left-1/2 top-1/4 -translate-x-1/2 -translate-y-10 opacity-[0.01]">
-        <Logo height="64" />
-      </div>
       <GeminiMark volume={agentVolume} state={agentState} />
       <Shadow volume={agentVolume} state={agentState} theme={theme} />
     </div>
@@ -45,7 +42,7 @@ const Shadow = ({ volume, state, theme }: { volume: number; state?: AgentState; 
     <div
       className="absolute z-0"
       style={{
-        transform: "translateY(140px) rotate3d(1, 0, 0, 80deg)",
+        transform: "translateY(70px) rotate3d(1, 0, 0, 80deg)",
         transformStyle: "preserve-3d",
         zIndex: -1,
       }}

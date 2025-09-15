@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { RecipeProvider } from "@/hooks/use-recipe";
 import { Roboto } from "next/font/google";
 import dynamic from "next/dynamic";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 const PostHogPageView = dynamic(
   () => import("../components/posthog-pageview"),
@@ -41,6 +42,7 @@ export default function RootLayout({
                 <ConnectionProvider>
                   <TooltipProvider>
                     <PostHogPageView />
+                    <ScrollToTop />
                     {children}
                     <Toaster />
                   </TooltipProvider>

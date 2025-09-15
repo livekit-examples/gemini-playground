@@ -13,8 +13,11 @@ import {
 
 import { useAgent } from "@/hooks/use-agent";
 import { useConnection } from "@/hooks/use-connection";
+import { useRecipe } from "@/hooks/use-recipe";
 import { toast } from "@/hooks/use-toast";
 import { GeminiVisualizer } from "@/components/visualizer/gemini-visualizer";
+import { Button } from "@/components/ui/button";
+import { StopCircle } from "lucide-react";
 
 interface ChatProps {
   compact?: boolean;
@@ -27,6 +30,7 @@ export function Chat({ compact = false, showControls = true }: ChatProps) {
   const [isChatRunning, setIsChatRunning] = useState(false);
   const { agent } = useAgent();
   const { disconnect } = useConnection();
+  const { endCookingSession } = useRecipe();
 
 
   const [hasSeenAgent, setHasSeenAgent] = useState(false);
@@ -115,7 +119,28 @@ export function Chat({ compact = false, showControls = true }: ChatProps) {
           {renderVisualizer()}
         </div>
         {showControls && (
-          <div className={compact ? "my-2" : "my-4"}>{renderConnectionControl()}</div>
+          <div className={compact ? "space-y-2" : "space-y-3"}>
+            {renderConnectionControl()}
+            {/* End Session Button */}
+            <div className="flex justify-center">
+              <Button
+                onClick={async () => {
+                  try {
+                    await disconnect();
+                  } catch (error) {
+                    console.error('Error disconnecting:', error);
+                  }
+                  endCookingSession();
+                }}
+                variant="destructive"
+                size="sm"
+                className="px-4"
+              >
+                <StopCircle className="mr-2 h-4 w-4" />
+                End Session
+              </Button>
+            </div>
+          </div>
         )}
       </div>
     </div>

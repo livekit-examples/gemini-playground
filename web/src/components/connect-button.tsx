@@ -34,6 +34,7 @@ export function ConnectButton() {
       disabled={connecting}
       variant={shouldConnect ? "destructive" : "default"}
       className="text-sm font-semibold"
+      size="sm"
     >
       {connecting ? (
         <>
@@ -42,12 +43,12 @@ export function ConnectButton() {
         </>
       ) : shouldConnect ? (
         <>
-          Stop Cooking Session
+          Pause Conversation
         </>
       ) : (
         <>
           <ChefHat className="mr-2 h-4 w-4" />
-          Start Cooking with Acai
+          Resume Conversation
         </>
       )}
     </Button>
