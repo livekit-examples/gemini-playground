@@ -30,7 +30,6 @@ export function GeminiVisualizer({
       }}
     >
       <GeminiMark volume={agentVolume} state={agentState} />
-      <Shadow volume={agentVolume} state={agentState} theme={theme} />
     </div>
   );
 }
@@ -42,7 +41,7 @@ const Shadow = ({ volume, state, theme }: { volume: number; state?: AgentState; 
     <div
       className="absolute z-0"
       style={{
-        transform: "translateY(70px) rotate3d(1, 0, 0, 80deg)",
+        transform: "translateX(120px) translateY(70px) rotate3d(1, 0, 0, 80deg)",
         transformStyle: "preserve-3d",
         zIndex: -1,
       }}
