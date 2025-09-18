@@ -5,12 +5,14 @@ import { Recipe, RecipeContext } from "@/data/recipe-types";
 import { useRecipe } from "@/hooks/use-recipe";
 import { useConnection } from "@/hooks/use-connection";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
+import { useAuth } from "@/contexts/auth-context";
 import { generateRecipeAwareInstructions } from "@/lib/recipe-context-generator";
 import { useRecipeCache } from "@/services/recipe-cache";
 import { mealDBApi } from "@/services/mealdb-api";
 import { transformMealDBToRecipe } from "@/utils/mealdb-transformer";
 import { RecipeBrowser } from "@/components/recipe-browser";
 import { VoiceSelection } from "@/components/voice-selection";
+import { LoginPage } from "@/components/login-page";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Users, ChefHat, ArrowLeft } from "lucide-react";
@@ -22,10 +24,12 @@ interface RecipeSelectorProps {
 export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const { startCookingSession, getRecipeContext } = useRecipe();
   const { connect } = useConnection();
   const { pgState, dispatch } = usePlaygroundState();
   const { cacheRecipe } = useRecipeCache();
+  const { user } = useAuth();
 
   const handleRecipeClick = async (recipe: Recipe) => {
     // If it's a preview recipe, load the full details
@@ -57,6 +61,12 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
 
   const handleStartCooking = async () => {
     if (selectedRecipe) {
+      // Check if user is authenticated before starting cooking session
+      if (!user) {
+        setShowLoginDialog(true);
+        return;
+      }
+
       setIsConnecting(true);
       try {
         console.log('🍳 Starting cooking session with recipe:', selectedRecipe.title);
@@ -121,6 +131,7 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
 
   if (selectedRecipe) {
     return (
+      <>
       <div className="w-full max-w-md mx-auto p-4 space-y-4">
         {/* Header with back button */}
         <div className="flex items-center gap-3 mb-4">
@@ -232,12 +243,37 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
           size="lg"
         >
           <ChefHat className="mr-2 h-5 w-5" />
-          {isConnecting ? "Connecting to Acai..." : "Start Cooking with Acai"}
+          {isConnecting ? "Connecting to Acai..." : user ? "Start Cooking with Acai" : "Sign In to Start Cooking Session"}
         </Button>
       </div>
-    );
+      
+      <LoginPage
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        onLoginSuccess={() => {
+          // After successful login, automatically start cooking if recipe was selected
+          if (selectedRecipe && !isConnecting) {
+            handleStartCooking();
+          }
+        }}
+      />
+    </>);
   }
 
   // Recipe List View - Use the new RecipeBrowser component
-  return <RecipeBrowser onRecipeSelected={handleRecipeClick} />;
+  return (
+    <>
+      <RecipeBrowser onRecipeSelected={handleRecipeClick} />
+      <LoginPage
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        onLoginSuccess={() => {
+          // After successful login, automatically start cooking if recipe was selected
+          if (selectedRecipe && !isConnecting) {
+            handleStartCooking();
+          }
+        }}
+      />
+    </>
+  );
 }

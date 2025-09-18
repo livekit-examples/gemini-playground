@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Recipe } from "@/data/recipe-types";
 import { mealDBApi, MealDBApiError } from "@/services/mealdb-api";
 import { transformMealDBToRecipes, transformMealDBPreviewsToRecipes, transformMealDBToRecipePreviews } from "@/utils/mealdb-transformer";
+import { useSignatureRecipes } from "@/hooks/use-signature-recipes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import {
   Shuffle, 
   Globe, 
   Tag,
+  Award,
   Loader2,
   AlertCircle,
   RefreshCw,
@@ -44,6 +46,9 @@ interface PaginationState {
 }
 
 interface TabState {
+  signature: {
+    loaded: boolean; // Signature recipes are managed by the hook, not tabState
+  };
   random: {
     recipes: Recipe[];
     loaded: boolean;
@@ -75,10 +80,20 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     hasSearched: false,
   });
   
+  // Signature recipes hook
+  const { 
+    recipes: signatureRecipes, 
+    loading: signatureLoading, 
+    error: signatureError,
+    isAvailable: isFirebaseAvailable,
+    refreshRecipes: refreshSignatureRecipes
+  } = useSignatureRecipes();
+  
   // Use ref to track loading state and prevent race conditions
   const loadingRef = useRef(false);
 
   const [tabState, setTabState] = useState<TabState>({
+    signature: { loaded: true }, // Always considered loaded since managed by hook
     random: { recipes: [], loaded: false },
     categories: { 
       allRecipes: [], 
@@ -103,7 +118,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   const [areas, setAreas] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [selectedArea, setSelectedArea] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("random");
+  const [activeTab, setActiveTab] = useState("signature");
   
   // Ref for scrolling to recipe grid
   const recipeGridRef = useRef<HTMLDivElement>(null);
@@ -223,6 +238,18 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     }
 
     // Otherwise, show tab-specific content
+    // Handle signature tab differently since it's managed by the hook
+    if (activeTab === 'signature') {
+      // Signature recipes are handled by the hook, show them directly
+      updateBrowseState({
+        recipes: signatureRecipes,
+        loading: signatureLoading,
+        error: signatureError,
+        hasSearched: true,
+      });
+      return;
+    }
+    
     const currentTabData = tabState[activeTab as keyof TabState];
     
     if (currentTabData.loaded) {
@@ -252,7 +279,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         error: null,
       });
     }
-  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery, browseState.loading]);
+  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery, browseState.loading, signatureRecipes, signatureLoading, signatureError]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -546,7 +573,11 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
 
       {/* Browse Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="signature" className="flex items-center gap-2">
+            <Award className="h-4 w-4" />
+            Signature
+          </TabsTrigger>
           <TabsTrigger value="random" className="flex items-center gap-2">
             <Shuffle className="h-4 w-4" />
             Random
@@ -560,6 +591,152 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
             Countries
           </TabsTrigger>
         </TabsList>
+
+        {/* Signature Recipes Tab */}
+        <TabsContent value="signature" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Signature Recipes</h3>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshSignatureRecipes}
+              disabled={signatureLoading}
+            >
+              {signatureLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <RefreshCw className="h-4 w-4 mr-2" />
+              )}
+              Refresh
+            </Button>
+          </div>
+
+          {/* Signature Error State */}
+          {signatureError && (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Unable to Load Signature Recipes</h3>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                {!isFirebaseAvailable 
+                  ? "Firebase is not configured. Signature recipes are not available." 
+                  : signatureError
+                }
+              </p>
+              {isFirebaseAvailable && (
+                <Button variant="outline" onClick={refreshSignatureRecipes}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Try Again
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Signature Loading State */}
+          {signatureLoading && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Loading signature recipes...</p>
+            </div>
+          )}
+
+          {/* Signature Recipes Grid */}
+          {!signatureError && !signatureLoading && signatureRecipes.length > 0 && (
+            <div ref={recipeGridRef} className="space-y-4">
+              {signatureRecipes.map((recipe) => (
+                <Card
+                  key={recipe.id}
+                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-border"
+                  onClick={() => onRecipeSelected(recipe)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      {/* Recipe Image */}
+                      {recipe.imageUrl && (
+                        <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                          <img
+                            src={recipe.imageUrl}
+                            alt={recipe.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex-1 space-y-2">
+                        <h3 className="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {recipe.description}
+                        </p>
+                        
+                        {/* Recipe Stats */}
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {recipe.totalTime && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{recipe.totalTime}m</span>
+                            </div>
+                          )}
+                          {recipe.servings && (
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span>{recipe.servings}</span>
+                            </div>
+                          )}
+                          {recipe.difficulty && (
+                            <Badge 
+                              variant={
+                                recipe.difficulty === 'Easy' ? 'default' :
+                                recipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
+                              }
+                              className="text-xs"
+                            >
+                              {recipe.difficulty}
+                            </Badge>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            <Award className="h-3 w-3 mr-1" />
+                            Signature
+                          </Badge>
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1">
+                          {recipe.tags.slice(0, 4).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State for Signature Recipes */}
+          {!signatureError && !signatureLoading && signatureRecipes.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <ChefHat className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Signature Recipes Available</h3>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                {!isFirebaseAvailable 
+                  ? "Firebase is not configured to load signature recipes." 
+                  : "There are no signature recipes available at the moment."
+                }
+              </p>
+              {isFirebaseAvailable && (
+                <Button variant="outline" onClick={refreshSignatureRecipes}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Check Again
+                </Button>
+              )}
+            </div>
+          )}
+        </TabsContent>
 
         {/* Random Recipes Tab */}
         <TabsContent value="random" className="space-y-4">
