@@ -9,16 +9,24 @@ import {
 import { Chat } from "@/components/chat";
 import { RecipeSelector } from "@/components/recipe-selector";
 import { CookingSession } from "@/components/cooking-session";
+import { RecipeCompletionSummary } from "@/components/recipe-completion-summary";
 import { useConnection } from "@/hooks/use-connection";
 import { useRecipe } from "@/hooks/use-recipe";
 import { AgentProvider } from "@/hooks/use-agent";
 
 export function RoomComponent() {
   const { shouldConnect, wsUrl, token } = useConnection();
-  const { currentRecipe, cookingSession } = useRecipe();
+  const { currentRecipe, cookingSession, endCookingSession } = useRecipe();
 
   // Show cooking session if active
-  const showCookingSession = currentRecipe && cookingSession && cookingSession.status !== 'completed';
+  const showCookingSession = currentRecipe && cookingSession && cookingSession.status === 'active';
+  // Show completion page if session is completed
+  const showCompletionPage = currentRecipe && cookingSession && cookingSession.status === 'completed';
+
+  const handleCompletionExit = () => {
+    // Clear the cooking session and return to home
+    endCookingSession();
+  };
   
   return (
     <LiveKitRoom
@@ -47,6 +55,11 @@ export function RoomComponent() {
               <div className="flex-shrink-0 border-t border-border">
                 <Chat compact showControls={true} />
               </div>
+            </div>
+          ) : showCompletionPage ? (
+            // Show recipe completion page
+            <div className="flex-1 overflow-y-auto p-2">
+              <RecipeCompletionSummary onExit={handleCompletionExit} />
             </div>
           ) : (
             // Show recipe selection or chat

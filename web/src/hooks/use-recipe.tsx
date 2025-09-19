@@ -154,13 +154,15 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
 
   const endCookingSession = () => {
     if (cookingSession) {
-      setCookingSession({ ...cookingSession, status: 'completed' });
-      setActiveTimers([]);
-      // Clear from localStorage after a delay
-      setTimeout(() => {
+      if (cookingSession.status === 'completed') {
+        // If already completed, clear everything (called from completion page)
         setCookingSession(null);
         setCurrentRecipe(null);
-      }, 5000);
+      } else {
+        // Mark as completed to show completion page
+        setCookingSession({ ...cookingSession, status: 'completed' });
+        setActiveTimers([]);
+      }
     }
   };
 

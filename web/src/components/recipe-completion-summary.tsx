@@ -2,9 +2,12 @@
 
 import { useRecipe } from "@/hooks/use-recipe";
 import { useConnection } from "@/hooks/use-connection";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Clock, Users, ChefHat } from "lucide-react";
+import { db, auth } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface RecipeCompletionSummaryProps {
   onExit: () => void;
@@ -13,13 +16,64 @@ interface RecipeCompletionSummaryProps {
 export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps) {
   const { currentRecipe, cookingSession } = useRecipe();
   const { disconnect } = useConnection();
+  const { user } = useAuth();
 
   const handleExit = async () => {
     try {
+      // Save recipe completion to Firestore
+      if (user && currentRecipe) {
+        console.log('Saving recipe completion to Firestore...', {
+          userId: user.uid,
+          recipeId: currentRecipe.id,
+          recipeTitle: currentRecipe.title,
+          userEmail: user.email
+        });
+        
+        // Ensure user is authenticated before writing to Firestore
+        if (!user.uid) {
+          throw new Error('User not properly authenticated');
+        }
+
+        // Verify current authentication state
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+          throw new Error('No authenticated user found');
+        }
+
+        // Get fresh authentication token to ensure we have valid credentials
+        const idToken = await currentUser.getIdToken(true);
+        console.log('🔑 Got fresh authentication token');
+
+        const docRef = await addDoc(collection(db, 'recipe_completions'), {
+          userId: user.uid,
+          recipeId: currentRecipe.id,
+          recipeTitle: currentRecipe.title,
+          completedAt: serverTimestamp(),
+          sessionId: cookingSession?.id || null,
+          userEmail: user.email, // Add user email for easier debugging
+        });
+        
+        console.log('✅ Recipe completion saved to history with ID:', docRef.id);
+      } else {
+        console.warn('Cannot save recipe history: user or currentRecipe is null', {
+          hasUser: !!user,
+          hasRecipe: !!currentRecipe
+        });
+      }
+
       // Disconnect from AI
       await disconnect();
     } catch (error) {
-      console.error('Error disconnecting:', error);
+      console.error('❌ Error saving recipe history or disconnecting:', error);
+      
+      // Still proceed with exit even if saving fails
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        });
+      }
     }
     // Call the exit callback to return to home
     onExit();
@@ -40,9 +94,12 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
         <div className="flex justify-center">
           <CheckCircle className="h-16 w-16 text-green-500" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Recipe Complete! 🎉</h1>
-        <p className="text-muted-foreground">
-          Congratulations! You've successfully completed the recipe.
+        <h1 className="text-2xl font-bold text-foreground">Congratulations! 🎉</h1>
+        <p className="text-muted-foreground text-lg">
+          You've completed <span className="font-semibold text-foreground">{currentRecipe.title}</span>!
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Great job cooking with Acai. We hope your meal turns out delicious!
         </p>
       </div>
 
@@ -50,7 +107,7 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
       <div className="bg-card border border-border rounded-lg p-4 space-y-4">
         {/* Recipe Image */}
         {currentRecipe.imageUrl && (
-          <div className="w-full h-32 rounded-lg overflow-hidden bg-muted">
+          <div className="w-full h-48 rounded-lg overflow-hidden bg-muted">
             <img
               src={currentRecipe.imageUrl}
               alt={currentRecipe.title}

@@ -11,7 +11,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
     "format:write": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "add-signature-recipe": "tsx scripts/add-signature-recipe-auth.ts",
-    "check-firebase-env": "tsx scripts/check-env.ts"
+    "check-firebase-env": "tsx scripts/check-env.ts",
+    "deploy-firestore-rules": "node scripts/deploy-firestore-rules.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
