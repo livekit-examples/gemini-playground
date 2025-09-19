@@ -167,12 +167,10 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
   // Step navigation simplified since we now have single instruction
   const goToStep = (stepNumber: number) => {
     // No longer needed with single instruction format
-    console.log('Step navigation not applicable with single instruction format');
   };
 
   const nextStep = () => {
     // No longer needed with single instruction format
-    console.log('Step navigation not applicable with single instruction format');
   };
 
   const previousStep = () => {

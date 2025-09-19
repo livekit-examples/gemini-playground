@@ -278,7 +278,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         });
       }
     }
-  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery]);
+  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.search.pagination.currentPage, tabState.random.loaded, tabState.categories.loaded, tabState.categories.pagination.currentPage, tabState.countries.loaded, tabState.countries.pagination.currentPage, searchQuery]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -547,14 +547,14 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 space-y-6">
+    <div className="w-full max-w-4xl mx-auto p-4 h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Find Recipes</h1>
+      <div className="text-center mb-4">
+        <h1 className="text-2xl font-bold text-primary mb-2">All You Can Cook</h1>
       </div>
 
       {/* Search Bar */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-6">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -571,7 +571,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       </div>
 
       {/* Browse Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full flex flex-col flex-grow overflow-hidden">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="signature" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
@@ -591,500 +591,451 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
           </TabsTrigger>
         </TabsList>
 
-        {/* Signature Recipes Tab */}
-        <TabsContent value="signature" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Signature Recipes</h3>
+        {/* Shared Header Section */}
+        <div className="flex justify-between mb-1 flex-shrink-0 mt-2 ml-2">
+          {activeTab === 'signature' && (
+            <>
+              <h3 className="text-lg font-semibold">Signature Recipes</h3>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshSignatureRecipes}
+                disabled={signatureLoading}
+              >
+                {signatureLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Refresh
+              </Button>
+            </>
+          )}
+          {activeTab === 'random' && (
+            <>
+              <h3 className="text-lg font-semibold">Random Recipes</h3>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setTabState(prev => ({
+                    ...prev,
+                    random: { ...prev.random, loaded: false }
+                  }));
+                  setTimeout(() => {
+                    loadRandomRecipes();
+                  }, 10);
+                }}
+                disabled={browseState.loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${browseState.loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </>
+          )}
+          {activeTab === 'categories' && (
+            <h3 className="text-lg font-semibold">Browse by Category</h3>
+          )}
+          {activeTab === 'countries' && (
+            <h3 className="text-lg font-semibold">Browse by Country</h3>
+          )}
+        </div>
+
+        {/* Active Filter Section - Only show for Categories/Countries with active filters */}
+        {((activeTab === 'categories' && selectedCategory) || (activeTab === 'countries' && selectedArea)) && (
+          <div className="flex items-center gap-2 flex-wrap mb-4 flex-shrink-0 ml-2">
+            <span className="text-sm text-muted-foreground">Active filter:</span>
+            {activeTab === 'categories' && selectedCategory && (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+                onClick={removeCategoryFilter}
+              >
+                Category: {selectedCategory}
+                <X className="h-3 w-3" />
+              </Badge>
+            )}
+            {activeTab === 'countries' && selectedArea && (
+              <Badge 
+                variant="secondary" 
+                className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+                onClick={removeAreaFilter}
+              >
+                Country: {selectedArea}
+                <X className="h-3 w-3" />
+              </Badge>
+            )}
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
-              onClick={refreshSignatureRecipes}
-              disabled={signatureLoading}
+              onClick={clearFilters}
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
-              {signatureLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              Refresh
+              Clear
             </Button>
           </div>
+        )}
 
-          {/* Signature Error State */}
-          {signatureError && (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">Unable to Load Signature Recipes</h3>
-              <p className="text-muted-foreground mb-4 max-w-md">
-                {!isFirebaseAvailable 
-                  ? "Firebase is not configured. Signature recipes are not available." 
-                  : signatureError
-                }
-              </p>
-              {isFirebaseAvailable && (
-                <Button variant="outline" onClick={refreshSignatureRecipes}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Try Again
-                </Button>
+        {/* Shared Content Area */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="space-y-4">
+              {/* Category/Country Selection - Only show when no filter is active */}
+              {activeTab === 'categories' && !selectedCategory && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-1">
+                  {categories.map((category) => (
+                    <Button
+                      key={category}
+                      variant="outline"
+                      size="sm"
+                      className="h-12 text-sm font-medium"
+                      onClick={() => handleCategoryFilter(category)}
+                      disabled={browseState.loading}
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
               )}
-            </div>
-          )}
+              
+              {activeTab === 'countries' && !selectedArea && (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 p-1">
+                  {areas.map((area) => (
+                    <Button
+                      key={area}
+                      variant="outline"
+                      size="sm"
+                      className="h-12 text-sm font-medium"
+                      onClick={() => handleAreaFilter(area)}
+                      disabled={browseState.loading}
+                    >
+                      {area}
+                    </Button>
+                  ))}
+                </div>
+              )}
 
-          {/* Signature Loading State */}
-          {signatureLoading && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Loading signature recipes...</p>
-            </div>
-          )}
-
-          {/* Signature Recipes Grid */}
-          {!signatureError && !signatureLoading && signatureRecipes.length > 0 && (
-            <div ref={recipeGridRef} className="space-y-4">
-              {signatureRecipes.map((recipe) => (
-                <Card
-                  key={recipe.id}
-                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-border"
-                  onClick={() => onRecipeSelected(recipe)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex gap-4">
-                      {/* Recipe Image */}
-                      {recipe.imageUrl && (
-                        <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
-                          <img
-                            src={recipe.imageUrl}
-                            alt={recipe.title}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
+              {/* Recipe Content Area - Show for all tabs when appropriate */}
+              {(activeTab === 'signature' || 
+                activeTab === 'random' || 
+                (activeTab === 'categories' && selectedCategory) || 
+                (activeTab === 'countries' && selectedArea)) && (
+                <>
+                  {/* Error States */}
+                  {browseState.error && (
+                    <Card className="border-destructive">
+                      <CardContent className="pt-6">
+                        <div className="flex items-center gap-2 text-destructive">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{browseState.error}</span>
                         </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Signature Error State */}
+                  {activeTab === 'signature' && signatureError && (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                      <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold text-foreground mb-2">Unable to Load Signature Recipes</h3>
+                      <p className="text-muted-foreground mb-4 max-w-md">
+                        {!isFirebaseAvailable 
+                          ? "Firebase is not configured. Signature recipes are not available." 
+                          : signatureError
+                        }
+                      </p>
+                      {isFirebaseAvailable && (
+                        <Button variant="outline" onClick={refreshSignatureRecipes}>
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Try Again
+                        </Button>
                       )}
+                    </div>
+                  )}
 
-                      <div className="flex-1 space-y-2">
-                        <h3 className="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {recipe.description}
-                        </p>
-                        
-                        {/* Recipe Stats */}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {recipe.totalTime && (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>{recipe.totalTime}m</span>
-                            </div>
-                          )}
-                          {recipe.servings && (
-                            <div className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              <span>{recipe.servings}</span>
-                            </div>
-                          )}
-                          {recipe.difficulty && (
-                            <Badge 
-                              variant={
-                                recipe.difficulty === 'Easy' ? 'default' :
-                                recipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
-                              }
-                              className="text-xs"
-                            >
-                              {recipe.difficulty}
-                            </Badge>
-                          )}
-                          <Badge variant="outline" className="text-xs">
-                            <Award className="h-3 w-3 mr-1" />
-                            Signature
-                          </Badge>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1">
-                          {recipe.tags.slice(0, 4).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
+                  {/* Loading States */}
+                  {(browseState.loading || (activeTab === 'signature' && signatureLoading)) && (
+                    <div className="flex justify-center py-8">
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Loading recipes...</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  )}
 
-          {/* Empty State for Signature Recipes */}
-          {!signatureError && !signatureLoading && signatureRecipes.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <ChefHat className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No Signature Recipes Available</h3>
-              <p className="text-muted-foreground mb-4 max-w-md">
-                {!isFirebaseAvailable 
-                  ? "Firebase is not configured to load signature recipes." 
-                  : "There are no signature recipes available at the moment."
-                }
-              </p>
-              {isFirebaseAvailable && (
-                <Button variant="outline" onClick={refreshSignatureRecipes}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Check Again
-                </Button>
+                  {/* No recipes found */}
+                  {((browseState.hasSearched && !browseState.loading && browseState.recipes.length === 0 && !browseState.error && activeTab !== 'signature') ||
+                    (activeTab === 'signature' && !signatureError && !signatureLoading && signatureRecipes.length === 0)) && (
+                    <div className="text-center py-8">
+                      <ChefHat className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No recipes found</h3>
+                      <p className="text-muted-foreground">
+                        {activeTab === 'signature' 
+                          ? (!isFirebaseAvailable 
+                              ? "Firebase is not configured to load signature recipes." 
+                              : "There are no signature recipes available at the moment.")
+                          : activeTab === 'random'
+                          ? "Try refreshing to get new random recipes."
+                          : "Try selecting a different option."
+                        }
+                      </p>
+                      {activeTab === 'signature' && isFirebaseAvailable && (
+                        <Button variant="outline" onClick={refreshSignatureRecipes} className="mt-4">
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          Check Again
+                        </Button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Signature Recipes Grid */}
+                  {activeTab === 'signature' && !signatureError && !signatureLoading && signatureRecipes.length > 0 && (
+                    <div ref={recipeGridRef} className="space-y-4">
+                      {signatureRecipes.map((recipe) => (
+                        <Card
+                          key={recipe.id}
+                          className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-border"
+                          onClick={() => onRecipeSelected(recipe)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex gap-4">
+                              {recipe.imageUrl && (
+                                <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                                  <img
+                                    src={recipe.imageUrl}
+                                    alt={recipe.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 space-y-2">
+                                <h3 className="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {recipe.description}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                  {recipe.totalTime && (
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      <span>{recipe.totalTime}m</span>
+                                    </div>
+                                  )}
+                                  {recipe.servings && (
+                                    <div className="flex items-center gap-1">
+                                      <Users className="h-3 w-3" />
+                                      <span>{recipe.servings}</span>
+                                    </div>
+                                  )}
+                                  {recipe.difficulty && (
+                                    <Badge 
+                                      variant={
+                                        recipe.difficulty === 'Easy' ? 'default' :
+                                        recipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
+                                      }
+                                      className="text-xs"
+                                    >
+                                      {recipe.difficulty}
+                                    </Badge>
+                                  )}
+                                  <Badge variant="outline" className="text-xs">
+                                    <Award className="h-3 w-3 mr-1" />
+                                    Signature
+                                  </Badge>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {recipe.tags.slice(0, 4).map((tag) => (
+                                    <Badge key={tag} variant="secondary" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Other Recipe Grids (Random, Categories, Countries) */}
+                  {browseState.recipes.length > 0 && activeTab !== 'signature' && (
+                    <>
+                      <div ref={recipeGridRef} className="space-y-4">
+                        {browseState.recipes.map((recipe) => (
+                          <Card
+                            key={recipe.id}
+                            className="cursor-pointer hover:shadow-lg transition-shadow"
+                            onClick={() => onRecipeSelected(recipe)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex gap-4">
+                                <div className="flex-shrink-0 w-20 h-20 bg-muted rounded-lg overflow-hidden">
+                                  {recipe.imageUrl ? (
+                                    <img
+                                      src={recipe.imageUrl}
+                                      alt={recipe.title}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <ChefHat className="h-8 w-8 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 space-y-2">
+                                  <h3 className="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
+                                  <p className="text-sm text-muted-foreground line-clamp-2">{recipe.description}</p>
+                                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                    {recipe.totalTime && (
+                                      <div className="flex items-center gap-1">
+                                        <Clock className="h-3 w-3" />
+                                        <span>{recipe.totalTime}m</span>
+                                      </div>
+                                    )}
+                                    {recipe.servings && (
+                                      <div className="flex items-center gap-1">
+                                        <Users className="h-3 w-3" />
+                                        <span>{recipe.servings}</span>
+                                      </div>
+                                    )}
+                                    {recipe.difficulty && (
+                                      <Badge 
+                                        variant={
+                                          recipe.difficulty === 'Easy' ? 'default' :
+                                          recipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
+                                        }
+                                        className="text-xs"
+                                      >
+                                        {recipe.difficulty}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {recipe.tags.slice(0, 4).map((tag) => (
+                                      <Badge key={tag} variant="outline" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ))}
+                                    {recipe.tags.length > 4 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        +{recipe.tags.length - 4}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+
+                      {/* Pagination Controls */}
+                      {(() => {
+                        const pagination = getCurrentPagination();
+                        if (!pagination || pagination.totalItems <= pagination.itemsPerPage) return null;
+                        
+                        const totalPages = Math.ceil(pagination.totalItems / pagination.itemsPerPage);
+                        const currentPage = pagination.currentPage;
+                        const paginationContext = getCurrentPaginationContext();
+                        
+                        if (!paginationContext) return null;
+                        
+                        return (
+                          <div className="pt-4 space-y-3">
+                            <div className="text-xs text-muted-foreground text-center">
+                              Showing {((currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(currentPage * pagination.itemsPerPage, pagination.totalItems)} of {pagination.totalItems} recipes
+                            </div>
+                            
+                            <div className="flex items-center justify-center gap-0.5 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(1, paginationContext)}
+                                disabled={currentPage <= 1}
+                                className="h-8 px-1.5 text-xs"
+                              >
+                                <ChevronsLeft className="h-3 w-3" />
+                                <span className="hidden md:inline ml-1">First</span>
+                              </Button>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage - 1, paginationContext)}
+                                disabled={currentPage <= 1}
+                                className="h-8 px-2 text-xs"
+                              >
+                                <span className="hidden sm:inline">Prev</span>
+                                <span className="sm:hidden">‹</span>
+                              </Button>
+                              
+                              <div className="flex items-center gap-0.5 mx-1">
+                                {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
+                                  let pageNum;
+                                  if (totalPages <= 3) {
+                                    pageNum = i + 1;
+                                  } else if (currentPage <= 2) {
+                                    pageNum = i + 1;
+                                  } else if (currentPage >= totalPages - 1) {
+                                    pageNum = totalPages - 2 + i;
+                                  } else {
+                                    pageNum = currentPage - 1 + i;
+                                  }
+                                  
+                                  return (
+                                    <Button
+                                      key={pageNum}
+                                      variant={currentPage === pageNum ? "default" : "outline"}
+                                      size="sm"
+                                      className="w-7 h-8 p-0 text-xs"
+                                      onClick={() => handlePageChange(pageNum, paginationContext)}
+                                    >
+                                      {pageNum}
+                                    </Button>
+                                  );
+                                })}
+                              </div>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(currentPage + 1, paginationContext)}
+                                disabled={currentPage >= totalPages}
+                                className="h-8 px-2 text-xs"
+                              >
+                                <span className="hidden sm:inline">Next</span>
+                                <span className="sm:hidden">›</span>
+                              </Button>
+                              
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handlePageChange(totalPages, paginationContext)}
+                                disabled={currentPage >= totalPages}
+                                className="h-8 px-1.5 text-xs"
+                              >
+                                <span className="hidden md:inline mr-1">Last</span>
+                                <ChevronsRight className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </>
+                  )}
+                </>
               )}
             </div>
-          )}
-        </TabsContent>
-
-        {/* Random Recipes Tab */}
-        <TabsContent value="random" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Random Recipes</h3>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                // Force reload by clearing the loaded state first
-                setTabState(prev => ({
-                  ...prev,
-                  random: { ...prev.random, loaded: false }
-                }));
-                
-                // Small delay to ensure state is updated
-                setTimeout(() => {
-                  loadRandomRecipes();
-                }, 10);
-              }}
-              disabled={browseState.loading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${browseState.loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* Categories Tab */}
-        <TabsContent value="categories" className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Browse by Category</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleCategoryFilter(category)}
-                  disabled={browseState.loading}
-                  className="text-xs"
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Countries Tab */}
-        <TabsContent value="countries" className="space-y-4">
-          <div>
-            <h3 className="text-lg font-semibold mb-3">Browse by Country</h3>
-            <ScrollArea className="h-32">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {areas.map((area) => (
-                  <Button
-                    key={area}
-                    variant={selectedArea === area ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleAreaFilter(area)}
-                    disabled={browseState.loading}
-                    className="text-xs"
-                  >
-                    {area}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        </TabsContent>
+          </ScrollArea>
+        </div>
       </Tabs>
 
-      {/* Active Filters */}
-      {(selectedCategory || selectedArea || searchQuery) && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Active filters:</span>
-          {searchQuery && (
-            <Badge 
-              variant="secondary" 
-              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
-              onClick={removeSearchFilter}
-            >
-              Search: {searchQuery}
-              <X className="h-3 w-3" />
-            </Badge>
-          )}
-          {selectedCategory && (
-            <Badge 
-              variant="secondary" 
-              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
-              onClick={removeCategoryFilter}
-            >
-              Category: {selectedCategory}
-              <X className="h-3 w-3" />
-            </Badge>
-          )}
-          {selectedArea && (
-            <Badge 
-              variant="secondary" 
-              className="cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
-              onClick={removeAreaFilter}
-            >
-              Country: {selectedArea}
-              <X className="h-3 w-3" />
-            </Badge>
-          )}
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear all
-          </Button>
-        </div>
-      )}
-
-      {/* Error State */}
-      {browseState.error && (
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              <span>{browseState.error}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Loading State */}
-      {browseState.loading && (
-        <div className="flex justify-center py-8">
-          <div className="flex items-center gap-2">
-            <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Loading recipes...</span>
-          </div>
-        </div>
-      )}
-
-      {/* Results - Don't show for signature tab since it has its own empty state */}
-      {browseState.hasSearched && !browseState.loading && browseState.recipes.length === 0 && !browseState.error && activeTab !== 'signature' && (
-        <div className="text-center py-8">
-          <ChefHat className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No recipes found</h3>
-          <p className="text-muted-foreground">Try adjusting your search or browse different categories.</p>
-        </div>
-      )}
-
-      {/* Recipe Grid - Don't show for signature tab since it has its own dedicated section */}
-      {browseState.recipes.length > 0 && activeTab !== 'signature' && (
-        <>
-          <div ref={recipeGridRef} className="space-y-4">
-            {browseState.recipes.map((recipe) => (
-              <Card
-                key={recipe.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => onRecipeSelected(recipe)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    {/* Recipe Image */}
-                    <div className="flex-shrink-0 w-20 h-20 bg-muted rounded-lg overflow-hidden">
-                      {recipe.imageUrl ? (
-                        <img
-                          src={recipe.imageUrl}
-                          alt={recipe.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <ChefHat className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Recipe Info */}
-                    <div className="flex-1 space-y-2">
-                      <h3 className="font-semibold text-lg line-clamp-1">{recipe.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {recipe.description}
-                      </p>
-                      
-                      {/* Recipe Stats */}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {recipe.totalTime && (
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{recipe.totalTime}m</span>
-                          </div>
-                        )}
-                        {recipe.servings && (
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span>{recipe.servings}</span>
-                          </div>
-                        )}
-                        {recipe.difficulty && (
-                          <Badge 
-                            variant={
-                              recipe.difficulty === 'Easy' ? 'default' :
-                              recipe.difficulty === 'Medium' ? 'secondary' : 'destructive'
-                            }
-                            className="text-xs"
-                          >
-                            {recipe.difficulty}
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1">
-                        {recipe.tags.slice(0, 4).map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {recipe.tags.length > 4 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{recipe.tags.length - 4}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Pagination Controls */}
-          {(() => {
-            const pagination = getCurrentPagination();
-            if (!pagination || pagination.totalItems <= pagination.itemsPerPage) return null;
-            
-            const totalPages = Math.ceil(pagination.totalItems / pagination.itemsPerPage);
-            const currentPage = pagination.currentPage;
-            const paginationContext = getCurrentPaginationContext();
-            
-            if (!paginationContext) return null;
-            
-            return (
-              <div className="pt-4 space-y-3">
-                {/* Recipe count info - smaller font, above pagination */}
-                <div className="text-xs text-muted-foreground text-center">
-                  Showing {((currentPage - 1) * pagination.itemsPerPage) + 1}-{Math.min(currentPage * pagination.itemsPerPage, pagination.totalItems)} of {pagination.totalItems} recipes
-                </div>
-                
-                {/* Pagination controls */}
-                <div className="flex items-center justify-center gap-0.5 flex-wrap">
-                  {/* First page button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(1, paginationContext)}
-                    disabled={currentPage <= 1}
-                    className="h-8 px-1.5 text-xs"
-                  >
-                    <ChevronsLeft className="h-3 w-3" />
-                    <span className="hidden md:inline ml-1">First</span>
-                  </Button>
-                  
-                  {/* Previous button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1, paginationContext)}
-                    disabled={currentPage <= 1}
-                    className="h-8 px-2 text-xs"
-                  >
-                    <span className="hidden sm:inline">Prev</span>
-                    <span className="sm:hidden">‹</span>
-                  </Button>
-                  
-                  {/* Page numbers */}
-                  <div className="flex items-center gap-0.5 mx-1">
-                    {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 2) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 1) {
-                        pageNum = totalPages - 2 + i;
-                      } else {
-                        pageNum = currentPage - 1 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          className="w-7 h-8 p-0 text-xs"
-                          onClick={() => handlePageChange(pageNum, paginationContext)}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Next button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1, paginationContext)}
-                    disabled={currentPage >= totalPages}
-                    className="h-8 px-2 text-xs"
-                  >
-                    <span className="hidden sm:inline">Next</span>
-                    <span className="sm:hidden">›</span>
-                  </Button>
-                  
-                  {/* Last page button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(totalPages, paginationContext)}
-                    disabled={currentPage >= totalPages}
-                    className="h-8 px-1.5 text-xs"
-                  >
-                    <span className="hidden md:inline mr-1">Last</span>
-                    <ChevronsRight className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })()}
-        </>
-      )}
-
-      {/* Welcome message when no search has been performed */}
-      {!browseState.hasSearched && !browseState.loading && (
-        <div className="text-center py-12">
-          <ChefHat className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Welcome to All You Can Cook!</h3>
-          <p className="text-muted-foreground mb-6">
-            Search for recipes, browse by category, or discover random dishes from around the world.
-          </p>
-          <Button 
-            onClick={() => {
-              loadRandomRecipes();
-            }} 
-            className="bg-orange-600 hover:bg-orange-700"
-          >
-            <Shuffle className="h-4 w-4 mr-2" />
-            Show Random Recipes
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

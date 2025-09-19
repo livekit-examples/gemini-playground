@@ -13,7 +13,6 @@ export interface UseSignatureRecipesReturn {
   
   // Actions
   loadSignatureRecipes: () => Promise<void>;
-  loadFeaturedRecipes: () => Promise<void>;
   refreshRecipes: () => Promise<void>;
 }
 
@@ -49,30 +48,6 @@ export function useSignatureRecipes(): UseSignatureRecipesReturn {
     }
   }, [isAvailable]);
 
-  /**
-   * Load featured signature recipes (smaller subset)
-   */
-  const loadFeaturedRecipes = useCallback(async (): Promise<void> => {
-    if (!isAvailable) {
-      setError('Firebase not configured');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const featuredRecipes = await SignatureRecipeService.getFeaturedSignatureRecipes(6);
-      setRecipes(featuredRecipes);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load featured recipes';
-      setError(errorMessage);
-      console.error('Error loading featured recipes:', err);
-      setRecipes([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [isAvailable]);
 
   /**
    * Refresh current recipes
@@ -86,11 +61,13 @@ export function useSignatureRecipes(): UseSignatureRecipesReturn {
    */
   useEffect(() => {
     if (isAvailable) {
+      console.log('Loading signature recipes');
       loadSignatureRecipes();
     } else {
       console.warn('Firebase not available, signature recipes will not load');
     }
-  }, [isAvailable, loadSignatureRecipes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAvailable]); // Only depend on isAvailable, not the function itself
 
   return {
     // State
@@ -101,7 +78,6 @@ export function useSignatureRecipes(): UseSignatureRecipesReturn {
     
     // Actions
     loadSignatureRecipes,
-    loadFeaturedRecipes,
     refreshRecipes,
   };
 }
