@@ -222,7 +222,7 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
           <h4 className="font-semibold text-foreground">Instructions</h4>
           <div className="bg-muted/50 rounded-lg p-4">
             <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">
-              {selectedRecipe.steps[0]?.instruction || 'No instructions available'}
+              {selectedRecipe.instructions || 'No instructions available'}
             </p>
           </div>
         </div>

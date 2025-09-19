@@ -11,7 +11,7 @@ export interface Recipe {
   totalTime?: number; // minutes (calculated: prepTime + cookTime) - Optional
   difficulty?: 'Easy' | 'Medium' | 'Hard'; // Optional - not provided by all APIs
   ingredients: Ingredient[];
-  steps: CookingStep[];
+  instructions: string; // Single instruction string (simplified from CookingStep array)
   tags: string[];
   nutrition?: NutritionInfo;
   imageUrl?: string;
@@ -153,47 +153,7 @@ export const sampleRecipe: Recipe = {
       category: 'spice'
     }
   ],
-  steps: [
-    {
-      stepNumber: 1,
-      instruction: "Bring a large pot of salted water to boil. Add pasta and cook according to package directions until al dente.",
-      duration: 10,
-      tips: ["Use plenty of water - about 4 liters for 400g pasta", "Salt the water generously - it should taste like seawater"],
-      equipment: ["Large pot", "Wooden spoon"]
-    },
-    {
-      stepNumber: 2,
-      instruction: "While pasta cooks, dice the pancetta into small cubes and cook in a large pan over medium heat until crispy.",
-      duration: 8,
-      ingredients: ["pancetta"],
-      tips: ["No oil needed - pancetta will render its own fat", "Don't overcook or it will become tough"],
-      equipment: ["Large pan or skillet"]
-    },
-    {
-      stepNumber: 3,
-      instruction: "In a bowl, whisk together the whole eggs, egg yolk, grated Parmesan, and freshly ground black pepper.",
-      ingredients: ["eggs", "egg-yolk", "parmesan", "black-pepper"],
-      tips: ["Make sure cheese is finely grated for smooth mixing", "Use room temperature eggs if possible"],
-      equipment: ["Large mixing bowl", "Whisk"]
-    },
-    {
-      stepNumber: 4,
-      instruction: "Reserve 1 cup of pasta cooking water, then drain the pasta. Immediately add hot pasta to the pan with pancetta.",
-      tips: ["Don't let the pasta cool down", "Save more pasta water than you think you'll need"],
-      equipment: ["Colander", "Measuring cup"]
-    },
-    {
-      stepNumber: 5,
-      instruction: "Remove pan from heat. Quickly add the egg mixture while tossing the pasta vigorously. Add pasta water gradually until creamy.",
-      tips: ["Work quickly to prevent eggs from scrambling", "The residual heat will cook the eggs gently", "Add pasta water slowly - you might not need it all"],
-      equipment: ["Tongs or pasta fork"]
-    },
-    {
-      stepNumber: 6,
-      instruction: "Serve immediately with extra Parmesan and black pepper. Enjoy your authentic carbonara!",
-      tips: ["Serve in warmed bowls if possible", "Carbonara waits for no one - serve immediately!"]
-    }
-  ],
+  instructions: "1. Bring a large pot of salted water to boil. Add pasta and cook according to package directions until al dente.\n\n2. While pasta cooks, dice the pancetta into small cubes and cook in a large pan over medium heat until crispy.\n\n3. In a bowl, whisk together the whole eggs, egg yolk, grated Parmesan, and freshly ground black pepper.\n\n4. Reserve 1 cup of pasta cooking water, then drain the pasta. Immediately add hot pasta to the pan with pancetta.\n\n5. Remove pan from heat. Quickly add the egg mixture while tossing the pasta vigorously. Add pasta water gradually until creamy.\n\n6. Serve immediately with extra Parmesan and black pepper. Enjoy your authentic carbonara!",
   tags: ["Italian", "Pasta", "Quick", "Comfort Food", "Traditional"],
   nutrition: {
     calories: 520,

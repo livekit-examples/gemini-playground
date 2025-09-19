@@ -2,7 +2,7 @@
 // Handles the conversion from MealDB's structure to our cooking app's Recipe interface
 
 import { MealDBMeal, MealDBMealPreview } from '@/types/mealdb-api';
-import { Recipe, Ingredient, CookingStep } from '@/data/recipe-types';
+import { Recipe, Ingredient } from '@/data/recipe-types';
 
 // Note: We no longer estimate difficulty, cooking time, or servings
 // as these are not provided by the MealDB API and should not be fabricated
@@ -18,7 +18,7 @@ export function transformMealDBPreviewToRecipe(preview: MealDBMealPreview): Reci
     
     // Preview recipes don't have full details - these will be loaded when selected
     ingredients: [], // Empty - will be populated when full recipe is loaded
-    steps: [], // Empty - will be populated when full recipe is loaded
+    instructions: '', // Empty - will be populated when full recipe is loaded
     tags: [], // Empty - will be populated when full recipe is loaded
     category: '', // Empty - will be populated when full recipe is loaded
     cuisine: '', // Empty - will be populated when full recipe is loaded
@@ -167,22 +167,19 @@ function categorizeIngredient(name: string): 'protein' | 'vegetable' | 'dairy' |
   return 'other';
 }
 
-// Create a single cooking step from raw instructions
-function createInstructionsStep(instructions: string): CookingStep[] {
-  if (!instructions) return [];
+// Process raw instructions string
+function processInstructions(instructions: string): string {
+  if (!instructions) return '';
   
-  // Return the raw instructions as a single step
+  // Return the raw instructions as-is, trimmed
   // Let the AI handle understanding and breaking down the steps
-  return [{
-    stepNumber: 1,
-    instruction: instructions.trim(),
-  }];
+  return instructions.trim();
 }
 
 // Main transformation function
 export function transformMealDBToRecipe(meal: MealDBMeal): Recipe {
   const ingredients = parseIngredients(meal);
-  const steps = createInstructionsStep(meal.strInstructions);
+  const instructions = processInstructions(meal.strInstructions);
   
   // Parse tags
   const tags: string[] = [meal.strCategory, meal.strArea];
@@ -202,7 +199,7 @@ export function transformMealDBToRecipe(meal: MealDBMeal): Recipe {
     // Note: MealDB API doesn't provide servings, prep time, cook time, or difficulty
     // These fields are left undefined rather than generating fake data
     ingredients,
-    steps,
+    instructions,
     tags: uniqueTags,
     imageUrl: meal.strMealThumb,
     author: 'TheMealDB',

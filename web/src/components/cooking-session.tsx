@@ -53,7 +53,7 @@ export function CookingSession() {
         <h4 className="font-semibold text-foreground mb-3">Instructions</h4>
         <div className="bg-muted/50 rounded-lg p-4">
           <p className="text-foreground leading-relaxed whitespace-pre-line">
-            {currentRecipe.steps[0]?.instruction || 'No instructions available'}
+            {currentRecipe.instructions || 'No instructions available'}
           </p>
         </div>
       </div>

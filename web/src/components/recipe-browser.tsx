@@ -73,14 +73,15 @@ interface TabState {
 
 export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   
+  // Main browse state - this will be the single source of truth
   const [browseState, setBrowseState] = useState<BrowseState>({
     recipes: [],
-    loading: false,
+    loading: true, // Start loading since we default to signature tab
     error: null,
     hasSearched: false,
   });
   
-  // Signature recipes hook
+  // Signature recipes hook - only used for signature tab
   const { 
     recipes: signatureRecipes, 
     loading: signatureLoading, 
@@ -89,11 +90,9 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     refreshRecipes: refreshSignatureRecipes
   } = useSignatureRecipes();
   
-  // Use ref to track loading state and prevent race conditions
-  const loadingRef = useRef(false);
-
+  // Tab-specific data storage
   const [tabState, setTabState] = useState<TabState>({
-    signature: { loaded: true }, // Always considered loaded since managed by hook
+    signature: { loaded: false }, // Will be loaded by hook
     random: { recipes: [], loaded: false },
     categories: { 
       allRecipes: [], 
@@ -122,6 +121,20 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   
   // Ref for scrolling to recipe grid
   const recipeGridRef = useRef<HTMLDivElement>(null);
+
+  // Handle tab switching with loading reset
+  const handleTabChange = (newTab: string) => {
+    if (newTab !== activeTab) {
+      // Reset loading state when switching tabs
+      updateBrowseState({
+        recipes: [],
+        loading: newTab === 'signature' ? signatureLoading : false, // Show loading for signature tab if it's still loading
+        error: null,
+        hasSearched: false,
+      });
+      setActiveTab(newTab);
+    }
+  };
 
   // Load categories and areas on mount
   useEffect(() => {
@@ -154,30 +167,16 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
   }, []);
 
   const loadRandomRecipes = useCallback(async () => {
-    // Prevent double loading using ref
-    if (loadingRef.current) {
+    // Don't load if already loaded or currently loading
+    if (tabState.random.loaded || browseState.loading) {
       return;
     }
     
-    // Check if random recipes are already loaded
-    setTabState(currentTabState => {
-      if (currentTabState.random.loaded) {
-        return currentTabState;
-      }
-      
-      // Set loading flag
-      loadingRef.current = true;
-      updateBrowseState({ loading: true, error: null });
-      
-      return currentTabState;
-    });
+    updateBrowseState({ loading: true, error: null });
     
     try {
       const meals = await mealDBApi.getRandomMeals(8);
       const recipes = transformMealDBToRecipePreviews(meals); // Use preview format for consistency
-      
-      // Reset loading flag
-      loadingRef.current = false;
       
       // Update tab state
       setTabState(prev => ({
@@ -196,8 +195,6 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         updateBrowseState({ loading: false });
       }
     } catch (error) {
-      // Reset loading flag on error
-      loadingRef.current = false;
       
       const errorMessage = error instanceof MealDBApiError ? error.message : 'Failed to load random recipes';
       updateBrowseState({ 
@@ -217,16 +214,30 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, tabState.random.loaded, browseState.loading]);
 
-  // Update browseState when switching tabs or pagination changes
+  // Handle signature recipes loading
   useEffect(() => {
-    // CRITICAL FIX: Don't interfere if we're currently loading
-    if (browseState.loading) {
-      return;
+    if (activeTab === 'signature') {
+      updateBrowseState({
+        recipes: signatureRecipes,
+        loading: signatureLoading,
+        error: signatureError,
+        hasSearched: true,
+      });
+      
+      // Update tab state when signature recipes are loaded
+      if (!signatureLoading && signatureRecipes.length > 0) {
+        setTabState(prev => ({
+          ...prev,
+          signature: { loaded: true }
+        }));
+      }
     }
-    
-    // Check if we have search results to show
+  }, [activeTab, signatureRecipes, signatureLoading, signatureError]);
+
+  // Handle tab switching and loading
+  useEffect(() => {
+    // Skip if we're showing search results
     if (tabState.search.loaded && tabState.search.query === searchQuery.trim()) {
-      // Show search results with pagination
       const recipes = getPaginatedRecipes(tabState.search.allRecipes, tabState.search.pagination);
       updateBrowseState({
         recipes,
@@ -237,49 +248,37 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       return;
     }
 
-    // Otherwise, show tab-specific content
-    // Handle signature tab differently since it's managed by the hook
-    if (activeTab === 'signature') {
-      // Signature recipes are handled by the hook, show them directly
-      updateBrowseState({
-        recipes: signatureRecipes,
-        loading: signatureLoading,
-        error: signatureError,
-        hasSearched: true,
-      });
-      return;
-    }
-    
-    const currentTabData = tabState[activeTab as keyof TabState];
-    
-    if (currentTabData.loaded) {
-      let recipes: Recipe[];
+    // Handle non-signature tabs
+    if (activeTab !== 'signature') {
+      const currentTabData = tabState[activeTab as keyof TabState];
       
-      if (activeTab === 'random') {
-        // Random tab doesn't use pagination
-        recipes = (currentTabData as typeof tabState.random).recipes;
+      if (currentTabData.loaded) {
+        let recipes: Recipe[];
+        
+        if (activeTab === 'random') {
+          recipes = (currentTabData as typeof tabState.random).recipes;
+        } else {
+          const paginatedTabData = currentTabData as typeof tabState.categories | typeof tabState.countries;
+          recipes = getPaginatedRecipes(paginatedTabData.allRecipes, paginatedTabData.pagination);
+        }
+        
+        updateBrowseState({
+          recipes,
+          hasSearched: true,
+          loading: false,
+          error: null,
+        });
       } else {
-        // Categories and countries use pagination
-        const paginatedTabData = currentTabData as typeof tabState.categories | typeof tabState.countries;
-        recipes = getPaginatedRecipes(paginatedTabData.allRecipes, paginatedTabData.pagination);
+        // Show loading state for unloaded tabs
+        updateBrowseState({
+          recipes: [],
+          hasSearched: false,
+          loading: false,
+          error: null,
+        });
       }
-      
-      updateBrowseState({
-        recipes,
-        hasSearched: true,
-        loading: false,
-        error: null,
-      });
-    } else {
-      // Clear recipes when switching to unloaded tab (but only if not loading)
-      updateBrowseState({
-        recipes: [],
-        hasSearched: false,
-        loading: false,
-        error: null,
-      });
     }
-  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery, browseState.loading, signatureRecipes, signatureLoading, signatureError]);
+  }, [activeTab, tabState.search.loaded, tabState.search.query, tabState.random.loaded, tabState.categories.loaded, tabState.countries.loaded, searchQuery]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -572,7 +571,7 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
       </div>
 
       {/* Browse Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="signature" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
@@ -746,9 +745,6 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
               variant="outline" 
               size="sm" 
               onClick={() => {
-                // Reset loading ref and state
-                loadingRef.current = false;
-                
                 // Force reload by clearing the loaded state first
                 setTabState(prev => ({
                   ...prev,
@@ -875,8 +871,8 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         </div>
       )}
 
-      {/* Results */}
-      {browseState.hasSearched && !browseState.loading && browseState.recipes.length === 0 && !browseState.error && (
+      {/* Results - Don't show for signature tab since it has its own empty state */}
+      {browseState.hasSearched && !browseState.loading && browseState.recipes.length === 0 && !browseState.error && activeTab !== 'signature' && (
         <div className="text-center py-8">
           <ChefHat className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">No recipes found</h3>
@@ -884,8 +880,8 @@ export function RecipeBrowser({ onRecipeSelected }: RecipeBrowserProps) {
         </div>
       )}
 
-      {/* Recipe Grid */}
-      {browseState.recipes.length > 0 && (
+      {/* Recipe Grid - Don't show for signature tab since it has its own dedicated section */}
+      {browseState.recipes.length > 0 && activeTab !== 'signature' && (
         <>
           <div ref={recipeGridRef} className="space-y-4">
             {browseState.recipes.map((recipe) => (

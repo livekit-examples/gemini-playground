@@ -1,6 +1,6 @@
 // Utility functions to convert Firestore signature recipes to existing Recipe types
 
-import { Recipe, Ingredient, CookingStep } from '@/data/recipe-types';
+import { Recipe, Ingredient } from '@/data/recipe-types';
 import { 
   FirestoreRecipe, 
   FirestoreIngredient, 
@@ -14,12 +14,18 @@ import {
  * Convert FirestoreRecipe back to existing Recipe format
  */
 export function firestoreRecipeToRecipe(firestoreRecipe: FirestoreRecipe): Recipe {
+  // Concatenate multiple Firestore steps into a single instruction string
+  const instructions = firestoreRecipe.steps
+    .sort((a, b) => a.number - b.number) // Ensure steps are in correct order
+    .map((step, index) => `${index + 1}. ${step.instruction}`)
+    .join('\n\n'); // Use double newline for better readability between steps
+
   return {
     id: firestoreRecipe.id,
     title: firestoreRecipe.title,
     description: firestoreRecipe.description,
     ingredients: firestoreRecipe.ingredients.map(firestoreIngredientToIngredient),
-    steps: firestoreRecipe.steps.map(firestoreStepToStep),
+    instructions,
     servings: firestoreRecipe.serving,
     totalTime: firestoreRecipe.total_time,
     difficulty: numberToDifficulty(firestoreRecipe.difficulty) as 'Easy' | 'Medium' | 'Hard',
@@ -44,18 +50,6 @@ function firestoreIngredientToIngredient(firestoreIngredient: FirestoreIngredien
     amount: firestoreIngredient.amount_from,
     unit: firestoreIngredient.unit,
     optional: firestoreIngredient.optional,
-  };
-}
-
-
-/**
- * Convert FirestoreStep back to existing CookingStep format
- */
-function firestoreStepToStep(firestoreStep: FirestoreStep): CookingStep {
-  return {
-    stepNumber: firestoreStep.number,
-    instruction: firestoreStep.instruction,
-    equipment: firestoreStep.equipment || [],
   };
 }
 

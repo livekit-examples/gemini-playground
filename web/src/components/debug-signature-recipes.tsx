@@ -75,22 +75,18 @@ export function DebugSignatureRecipes() {
                       <div><strong>Image URL:</strong> {recipe.imageUrl || "❌ MISSING"}</div>
                       <div><strong>Servings:</strong> {recipe.servings || "❌ MISSING"}</div>
                       <div><strong>Total Time:</strong> {recipe.totalTime || "❌ MISSING"}</div>
-                      <div><strong>Steps Count:</strong> {recipe.steps?.length || 0}</div>
+                      <div><strong>Instructions Length:</strong> {recipe.instructions?.length || 0} characters</div>
                       <div><strong>Ingredients Count:</strong> {recipe.ingredients?.length || 0}</div>
                       <div><strong>Tags Count:</strong> {recipe.tags?.length || 0}</div>
                       <div><strong>Source:</strong> {recipe.source}</div>
                       
-                      {/* Steps Detail */}
-                      {recipe.steps && recipe.steps.length > 0 && (
+                      {/* Instructions Detail */}
+                      {recipe.instructions && (
                         <div>
-                          <strong>Steps:</strong>
-                          <ol className="ml-4 mt-1">
-                            {recipe.steps.map((step, i) => (
-                              <li key={i} className="mb-1">
-                                <strong>Step {step.stepNumber}:</strong> {step.instruction.substring(0, 50)}...
-                              </li>
-                            ))}
-                          </ol>
+                          <strong>Instructions:</strong>
+                          <div className="ml-4 mt-1 whitespace-pre-line text-sm">
+                            {recipe.instructions.substring(0, 200)}...
+                          </div>
                         </div>
                       )}
                       

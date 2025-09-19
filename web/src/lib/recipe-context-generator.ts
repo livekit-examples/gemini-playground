@@ -25,26 +25,8 @@ export function generateRecipeAwareInstructions(
     .map(ing => `- ${ing.amount} ${ing.unit} ${ing.name}${ing.notes ? ` (${ing.notes})` : ''}${ing.optional ? ' [OPTIONAL]' : ''}`)
     .join('\n');
 
-  // Format steps list
-  const stepsList = recipe.steps
-    .map(step => {
-      const isCompleted = completedSteps.includes(step.stepNumber);
-      const isCurrent = step.stepNumber === currentStep;
-      const status = isCompleted ? '[COMPLETED]' : isCurrent ? '[CURRENT STEP]' : '[UPCOMING]';
-      
-      let stepText = `${step.stepNumber}. ${status} ${step.instruction}`;
-      
-      if (step.duration) {
-        stepText += ` (${step.duration} minutes)`;
-      }
-      
-      if (step.tips && step.tips.length > 0) {
-        stepText += `\n   Tips: ${step.tips.join('; ')}`;
-      }
-      
-      return stepText;
-    })
-    .join('\n');
+  // Format instructions (simplified from steps)
+  const instructionsList = recipe.instructions || 'No instructions available';
 
   // Format active timers
   const timersList = activeTimers.length > 0 
@@ -70,22 +52,14 @@ Total Time: ${recipe.totalTime} minutes
 INGREDIENTS (${recipe.ingredients.length} items):
 ${ingredientsList}
 
-COOKING STEPS (Step ${currentStep} of ${recipe.steps.length}):
-${stepsList}
+INSTRUCTIONS:
+${instructionsList}
 
 ACTIVE TIMERS:
 ${timersList}
 
-PROGRESS: ${completedSteps.length} of ${recipe.steps.length} steps completed
-
 === COOKING SESSION CONTEXT ===
-The user is currently cooking "${recipe.title}" and is on step ${currentStep} of ${recipe.steps.length}. 
-
-${currentStep <= recipe.steps.length ? `
-CURRENT STEP DETAILS:
-${recipe.steps.find(s => s.stepNumber === currentStep)?.instruction}
-
-` : ''}
+The user is currently cooking "${recipe.title}". 
 
 Please focus your responses on:
 1. Guiding the user through the current step

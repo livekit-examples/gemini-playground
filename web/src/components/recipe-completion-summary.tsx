@@ -30,7 +30,8 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
   }
 
   const completedSteps = cookingSession?.completedSteps.length || 0;
-  const totalSteps = currentRecipe.steps.length;
+  // Simplified since we now have single instruction instead of multiple steps
+  const totalSteps = 1;
 
   return (
     <div className="w-full max-w-md mx-auto p-4 space-y-6">
@@ -74,7 +75,7 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Users className="h-4 w-4" />
-              <span>{currentRecipe.servings} serving{currentRecipe.servings > 1 ? 's' : ''}</span>
+              <span>{currentRecipe.servings || 1} serving{(currentRecipe.servings || 1) > 1 ? 's' : ''}</span>
             </div>
             <Badge variant={
               currentRecipe.difficulty === 'Easy' ? 'default' :

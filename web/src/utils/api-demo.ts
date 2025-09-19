@@ -22,7 +22,7 @@ export class RecipeApiDemo {
         console.log(`   - Difficulty: ${recipe.difficulty}`);
         console.log(`   - Time: ${recipe.totalTime} minutes`);
         console.log(`   - Ingredients: ${recipe.ingredients.length}`);
-        console.log(`   - Steps: ${recipe.steps.length}`);
+        console.log(`   - Instructions: ${recipe.instructions?.length || 0} characters`);
       });
       
       return recipes;
@@ -176,7 +176,7 @@ export class RecipeApiDemo {
       console.log(`- Total time: ${recipe.totalTime}min`);
       console.log(`- Servings: ${recipe.servings}`);
       console.log(`- Ingredients: ${recipe.ingredients.length}`);
-      console.log(`- Steps: ${recipe.steps.length}`);
+      console.log(`- Instructions: ${recipe.instructions?.length || 0} characters`);
       console.log(`- Tags: ${recipe.tags.join(', ')}`);
       
       // Show ingredient parsing
@@ -185,13 +185,9 @@ export class RecipeApiDemo {
         console.log(`${index + 1}. ${ing.amount} ${ing.unit} ${ing.name}${ing.notes ? ` (${ing.notes})` : ''}`);
       });
       
-      // Show step parsing
-      console.log('\n👨‍🍳 Sample cooking steps:');
-      recipe.steps.slice(0, 3).forEach((step, index) => {
-        console.log(`${index + 1}. ${step.instruction.substring(0, 100)}...`);
-        if (step.duration) console.log(`   ⏱️ Duration: ${step.duration} minutes`);
-        if (step.tips) console.log(`   💡 Tips: ${step.tips.length}`);
-      });
+      // Show instructions
+      console.log('\n👨‍🍳 Instructions preview:');
+      console.log(`${recipe.instructions?.substring(0, 200) || 'No instructions available'}...`);
       
       return { originalMeal: meal, transformedRecipe: recipe };
     } catch (error) {

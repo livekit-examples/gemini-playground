@@ -164,19 +164,15 @@ export function RecipeProvider({ children }: RecipeProviderProps) {
     }
   };
 
+  // Step navigation simplified since we now have single instruction
   const goToStep = (stepNumber: number) => {
-    if (cookingSession && currentRecipe) {
-      const maxStep = currentRecipe.steps.length;
-      const validStep = Math.max(1, Math.min(stepNumber, maxStep));
-      setCookingSession({ ...cookingSession, currentStep: validStep });
-    }
+    // No longer needed with single instruction format
+    console.log('Step navigation not applicable with single instruction format');
   };
 
   const nextStep = () => {
-    if (cookingSession && currentRecipe) {
-      const nextStepNumber = Math.min(cookingSession.currentStep + 1, currentRecipe.steps.length);
-      goToStep(nextStepNumber);
-    }
+    // No longer needed with single instruction format
+    console.log('Step navigation not applicable with single instruction format');
   };
 
   const previousStep = () => {
