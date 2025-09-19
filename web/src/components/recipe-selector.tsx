@@ -132,19 +132,23 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
   if (selectedRecipe) {
     return (
       <>
-      <div className="w-full max-w-md mx-auto p-4 space-y-4">
-        {/* Header with back button */}
-        <div className="flex items-center gap-3 mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToList}
-            className="p-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="text-lg font-semibold text-foreground">Recipe Details</h2>
-        </div>
+        <div className="w-full max-w-md mx-auto h-full flex flex-col">
+          {/* Fixed Header with back button */}
+          <div className="flex items-center gap-3 p-4 pb-2 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackToList}
+              className="p-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="text-lg font-semibold text-foreground">{selectedRecipe.title}</h2>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <div className="space-y-4">
 
         {/* Recipe Image */}
         {selectedRecipe.imageUrl && (
@@ -162,7 +166,6 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
 
         {/* Recipe Info */}
         <div className="space-y-3">
-          <h3 className="text-xl font-bold text-foreground">{selectedRecipe.title}</h3>
           <p className="text-sm text-muted-foreground">{selectedRecipe.description}</p>
 
           {/* Quick Stats */}
@@ -244,10 +247,12 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
         >
           <ChefHat className="mr-2 h-5 w-5" />
           {isConnecting ? "Connecting to Acai..." : user ? "Start Cooking with Acai" : "Sign In to Start Cooking Session"}
-        </Button>
-      </div>
-      
-      <LoginPage
+            </Button>
+            </div>
+          </div>
+        </div>
+        
+        <LoginPage
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
         onLoginSuccess={() => {
