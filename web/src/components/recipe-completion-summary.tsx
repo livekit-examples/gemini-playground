@@ -5,7 +5,7 @@ import { useConnection } from "@/hooks/use-connection";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, Users, ChefHat } from "lucide-react";
+import { CheckCircle, Clock, Users } from "lucide-react";
 import { db, auth } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
@@ -96,7 +96,7 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
         </div>
         <h1 className="text-2xl font-bold text-foreground">Congratulations! 🎉</h1>
         <p className="text-muted-foreground text-lg">
-          You've completed <span className="font-semibold text-foreground">{currentRecipe.title}</span>!
+          You&apos;ve completed <span className="font-semibold text-foreground">{currentRecipe.title}</span>!
         </p>
         <p className="text-sm text-muted-foreground">
           Great job! We hope your meal turns out delicious!

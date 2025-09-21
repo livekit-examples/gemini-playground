@@ -42,7 +42,7 @@ This directory houses the web frontend, built with Next.js.
 1. Navigate to the `/web` directory
 2. Install dependencies: `pnpm install`
 3. Run the development server: `pnpm dev`
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+4. Open [http://localhost:3006](http://localhost:3006) in your browser
 
 ## Deployment
 

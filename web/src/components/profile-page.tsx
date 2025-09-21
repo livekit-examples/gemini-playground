@@ -19,7 +19,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, orderBy, limit, startAfter, getDocs, type DocumentSnapshot } from "firebase/firestore";
+import { collection, query, where, orderBy, getDocs, type DocumentSnapshot } from "firebase/firestore";
 import Link from "next/link";
 
 interface RecipeCompletion {

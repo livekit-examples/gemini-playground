@@ -30,17 +30,23 @@ export function Header() {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-2 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        {/* Left side - App name */}
-        <div className="flex items-center gap-2">
-          <ChefHat className="h-5 w-5 text-orange-500" />
-          <h1 className="text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-            All You Can Cook
-          </h1>
-        </div>
+      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="max-w-md mx-auto w-full px-4 py-2 flex items-center justify-between">
+          {/* Left side - App name */}
+          <a 
+            href="https://allyoucancook.life/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <ChefHat className="h-5 w-5 text-orange-500" />
+            <h1 className="text-lg font-semibold bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+              All You Can Cook
+            </h1>
+          </a>
 
-        {/* Right side - Auth and Theme toggle */}
-        <div className="flex items-center gap-2">
+          {/* Right side - Auth and Theme toggle */}
+          <div className="flex items-center gap-2">
           {/* Authentication */}
           {loading ? (
             <div className="h-7 w-7" /> // Placeholder to prevent layout shift
@@ -98,6 +104,7 @@ export function Header() {
             <Moon className="absolute h-4 w-4 text-slate-200 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Toggle theme</span>
           </Button>
+          </div>
         </div>
       </header>
 

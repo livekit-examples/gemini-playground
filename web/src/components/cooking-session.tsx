@@ -2,8 +2,6 @@
 
 import { useRecipe } from "@/hooks/use-recipe";
 import { useConnection } from "@/hooks/use-connection";
-import { Button } from "@/components/ui/button";
-import { StopCircle } from "lucide-react";
 
 export function CookingSession() {
   const {

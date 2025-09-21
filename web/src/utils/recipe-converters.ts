@@ -4,10 +4,8 @@ import { Recipe, Ingredient } from '@/data/recipe-types';
 import { 
   FirestoreRecipe, 
   FirestoreIngredient, 
-  FirestoreStep, 
   FirestoreTag, 
-  FirestoreNutrition,
-  IngredientTag
+  FirestoreNutrition
 } from '@/types/firestore-types';
 
 /**

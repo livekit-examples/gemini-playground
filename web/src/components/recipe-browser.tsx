@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Recipe } from "@/data/recipe-types";
 import { mealDBApi, MealDBApiError } from "@/services/mealdb-api";
-import { transformMealDBToRecipes, transformMealDBPreviewsToRecipes, transformMealDBToRecipePreviews } from "@/utils/mealdb-transformer";
+import { transformMealDBPreviewsToRecipes, transformMealDBToRecipePreviews } from "@/utils/mealdb-transformer";
 import { useSignatureRecipes } from "@/hooks/use-signature-recipes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Search, 

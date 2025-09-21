@@ -233,7 +233,7 @@ export function RecipeSelector({ onRecipeSelected }: RecipeSelectorProps) {
         {/* Voice Selection - Choose Acai's voice */}
         <div className="mt-6 mb-4">
           <div className="text-sm font-medium text-foreground mb-3 text-center">
-            Choose Acai's Voice
+            Choose Acai&apos;s Voice
           </div>
           <VoiceSelection />
         </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { GeminiMark } from "@/components/visualizer/gemini-mark";
-import Logo from "@/assets/gemini.svg";
 
 import {
   AgentState,
