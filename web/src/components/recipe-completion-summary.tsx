@@ -99,7 +99,7 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
           You've completed <span className="font-semibold text-foreground">{currentRecipe.title}</span>!
         </p>
         <p className="text-sm text-muted-foreground">
-          Great job cooking with Acai. We hope your meal turns out delicious!
+          Great job! We hope your meal turns out delicious!
         </p>
       </div>
 
@@ -142,18 +142,6 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
             </Badge>
           </div>
 
-          {/* Progress */}
-          <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-green-800 dark:text-green-200">
-                ✅ Steps Completed
-              </span>
-              <span className="text-green-700 dark:text-green-300">
-                {completedSteps} / {totalSteps}
-              </span>
-            </div>
-          </div>
-
           {/* Tags */}
           <div className="flex flex-wrap gap-2">
             {currentRecipe.tags.slice(0, 4).map((tag) => (
@@ -161,21 +149,6 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
                 {tag}
               </Badge>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Completion Message */}
-      <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <ChefHat className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-orange-800 dark:text-orange-200 mb-1">
-              Great job cooking with Acai! 👨‍🍳
-            </h3>
-            <p className="text-sm text-orange-700 dark:text-orange-300">
-              You've successfully prepared {currentRecipe.title}. We hope you enjoyed cooking together and that your meal turns out delicious!
-            </p>
           </div>
         </div>
       </div>
@@ -191,7 +164,7 @@ export function RecipeCompletionSummary({ onExit }: RecipeCompletionSummaryProps
 
       <div className="text-center">
         <p className="text-xs text-muted-foreground">
-          Thank you for cooking with All You Can Cook! 🍳
+          Thank you for cooking with All You Can Cook!
         </p>
       </div>
     </div>
