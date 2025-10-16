@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const {
     instructions,
     geminiAPIKey,
-    sessionConfig: { modalities, voice, temperature, maxOutputTokens },
+    sessionConfig: { model, modalities, voice, temperature, maxOutputTokens, nanoBananaEnabled },
   } = playgroundState;
 
   if (!geminiAPIKey) {
@@ -41,11 +41,13 @@ export async function POST(request: Request) {
     identity: "human",
     metadata: JSON.stringify({
       instructions: instructions,
+      model: model,
       modalities: modalities,
       voice: voice,
       temperature: temperature,
       max_output_tokens: maxOutputTokens,
-      gemini_api_key: geminiAPIKey,
+      nano_banana_enabled: Boolean(nanoBananaEnabled),
+      gemini_api_key: String(geminiAPIKey),
     }),
   });
   at.addGrant({

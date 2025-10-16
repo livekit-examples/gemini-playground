@@ -37,7 +37,7 @@ export function ModalitiesSelector({
         <HoverCard openDelay={200}>
           <HoverCardTrigger asChild>
             <FormItem className="flex flex-row items-center space-y-0 justify-between px-1">
-              <FormLabel className="text-sm">Response modalities</FormLabel>
+              <FormLabel className="text-sm font-medium text-fg1">Response modalities</FormLabel>
               <Select
                 onValueChange={(v) => {
                   if (
@@ -73,7 +73,7 @@ export function ModalitiesSelector({
           <HoverCardContent
             align="start"
             className="w-[260px] text-sm"
-            side="bottom"
+            side="right"
           >
             The set of modalities the model can respond with.
           </HoverCardContent>

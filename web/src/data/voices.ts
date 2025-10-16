@@ -4,14 +4,70 @@ export enum VoiceId {
   KORE = "Kore",
   FENRIR = "Fenrir",
   AOEDE = "Aoede",
+  ZEPHYR = "Zephyr",
+  LEDA = "Leda",
+  ORUS = "Orus",
+  CALLIRRHOE = "Callirrhoe",
+  AUTONOE = "Autonoe",
+  ENCELADUS = "Enceladus",
+  IAPETUS = "Iapetus",
+  UMBRIEL = "Umbriel",
+  ALGIEBA = "Algieba",
+  DESPINA = "Despina",
+  ERINOME = "Erinome",
+  ALGENIB = "Algenib",
+  RASALGETHI = "Rasalgethi",
+  LAOMEDEIA = "Laomedeia",
+  ACHERNAR = "Achernar",
+  ALNILAM = "Alnilam",
+  SCHEDAR = "Schedar",
+  GACRUX = "Gacrux",
+  PULCHERRIMA = "Pulcherrima",
+  ACHIRD = "Achird",
+  ZUBENELGENUBI = "Zubenelgenubi",
+  VINDEMIATRIX = "Vindemiatrix",
+  SADACHBIA = "Sadachbia",
+  SADALTAGER = "Sadaltager",
+  SULAFAT = "Sulafat",
 }
 
 export interface Voice {
   id: VoiceId;
   name: string;
+  characteristic: string;
 }
 
-export const voices: Voice[] = Object.values(VoiceId).map((id) => ({
-  id,
-  name: id,
-}));
+export const voicesData: Record<VoiceId, Voice> = {
+  [VoiceId.ZEPHYR]: { id: VoiceId.ZEPHYR, name: "Zephyr", characteristic: "Bright" },
+  [VoiceId.PUCK]: { id: VoiceId.PUCK, name: "Puck", characteristic: "Upbeat" },
+  [VoiceId.CHARON]: { id: VoiceId.CHARON, name: "Charon", characteristic: "Informative" },
+  [VoiceId.KORE]: { id: VoiceId.KORE, name: "Kore", characteristic: "Firm" },
+  [VoiceId.FENRIR]: { id: VoiceId.FENRIR, name: "Fenrir", characteristic: "Excitable" },
+  [VoiceId.LEDA]: { id: VoiceId.LEDA, name: "Leda", characteristic: "Youthful" },
+  [VoiceId.ORUS]: { id: VoiceId.ORUS, name: "Orus", characteristic: "Firm" },
+  [VoiceId.AOEDE]: { id: VoiceId.AOEDE, name: "Aoede", characteristic: "Breezy" },
+  [VoiceId.CALLIRRHOE]: { id: VoiceId.CALLIRRHOE, name: "Callirrhoe", characteristic: "Easy-going" },
+  [VoiceId.AUTONOE]: { id: VoiceId.AUTONOE, name: "Autonoe", characteristic: "Bright" },
+  [VoiceId.ENCELADUS]: { id: VoiceId.ENCELADUS, name: "Enceladus", characteristic: "Breathy" },
+  [VoiceId.IAPETUS]: { id: VoiceId.IAPETUS, name: "Iapetus", characteristic: "Clear" },
+  [VoiceId.UMBRIEL]: { id: VoiceId.UMBRIEL, name: "Umbriel", characteristic: "Easy-going" },
+  [VoiceId.ALGIEBA]: { id: VoiceId.ALGIEBA, name: "Algieba", characteristic: "Smooth" },
+  [VoiceId.DESPINA]: { id: VoiceId.DESPINA, name: "Despina", characteristic: "Smooth" },
+  [VoiceId.ERINOME]: { id: VoiceId.ERINOME, name: "Erinome", characteristic: "Clear" },
+  [VoiceId.ALGENIB]: { id: VoiceId.ALGENIB, name: "Algenib", characteristic: "Gravelly" },
+  [VoiceId.RASALGETHI]: { id: VoiceId.RASALGETHI, name: "Rasalgethi", characteristic: "Informative" },
+  [VoiceId.LAOMEDEIA]: { id: VoiceId.LAOMEDEIA, name: "Laomedeia", characteristic: "Upbeat" },
+  [VoiceId.ACHERNAR]: { id: VoiceId.ACHERNAR, name: "Achernar", characteristic: "Soft" },
+  [VoiceId.ALNILAM]: { id: VoiceId.ALNILAM, name: "Alnilam", characteristic: "Firm" },
+  [VoiceId.SCHEDAR]: { id: VoiceId.SCHEDAR, name: "Schedar", characteristic: "Even" },
+  [VoiceId.GACRUX]: { id: VoiceId.GACRUX, name: "Gacrux", characteristic: "Mature" },
+  [VoiceId.PULCHERRIMA]: { id: VoiceId.PULCHERRIMA, name: "Pulcherrima", characteristic: "Forward" },
+  [VoiceId.ACHIRD]: { id: VoiceId.ACHIRD, name: "Achird", characteristic: "Friendly" },
+  [VoiceId.ZUBENELGENUBI]: { id: VoiceId.ZUBENELGENUBI, name: "Zubenelgenubi", characteristic: "Casual" },
+  [VoiceId.VINDEMIATRIX]: { id: VoiceId.VINDEMIATRIX, name: "Vindemiatrix", characteristic: "Gentle" },
+  [VoiceId.SADACHBIA]: { id: VoiceId.SADACHBIA, name: "Sadachbia", characteristic: "Lively" },
+  [VoiceId.SADALTAGER]: { id: VoiceId.SADALTAGER, name: "Sadaltager", characteristic: "Knowledgeable" },
+  [VoiceId.SULAFAT]: { id: VoiceId.SULAFAT, name: "Sulafat", characteristic: "Warm" },
+};
+
+export const voices: Voice[] = Object.values(voicesData);

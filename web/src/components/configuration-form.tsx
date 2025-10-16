@@ -16,10 +16,7 @@ import {
   useVoiceAssistant,
 } from "@livekit/components-react";
 import { ConnectionState } from "livekit-client";
-import { Button } from "@/components/ui/button";
 import { defaultSessionConfig } from "@/data/playground-state";
-import { useConnection } from "@/hooks/use-connection";
-import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ModalitiesId } from "@/data/modalities";
 export const ConfigurationFormSchema = z.object({
@@ -28,6 +25,7 @@ export const ConfigurationFormSchema = z.object({
   voice: z.nativeEnum(VoiceId),
   temperature: z.number().min(0.6).max(1.2),
   maxOutputTokens: z.number().nullable(),
+  nanoBananaEnabled: z.boolean(),
 });
 
 export interface ConfigurationFormFieldProps {
@@ -38,7 +36,6 @@ export interface ConfigurationFormFieldProps {
 export function ConfigurationForm() {
   const { pgState, dispatch } = usePlaygroundState();
   const connectionState = useConnectionState();
-  const { voice, disconnect, connect } = useConnection();
   const { localParticipant } = useLocalParticipant();
   const form = useForm<z.infer<typeof ConfigurationFormSchema>>({
     resolver: zodResolver(ConfigurationFormSchema),
@@ -47,6 +44,7 @@ export function ConfigurationForm() {
   });
   const formValues = form.watch();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref to track timeout
+  const hasConnectedOnceRef = useRef(false); // Track if we've connected once
   const { toast } = useToast();
   const { agent } = useVoiceAssistant();
 
@@ -55,32 +53,37 @@ export function ConfigurationForm() {
     const attributes: { [key: string]: string } = {
       gemini_api_key: pgState.geminiAPIKey || "",
       instructions: pgState.instructions,
+      model: values.model,
       voice: values.voice,
       modalities: values.modalities,
       temperature: values.temperature.toString(),
       max_output_tokens: values.maxOutputTokens
         ? values.maxOutputTokens.toString()
         : "",
+      nano_banana_enabled: values.nanoBananaEnabled.toString(),
     };
-    // Check if the local participant already has attributes set
-    const hadExistingAttributes =
-      Object.keys(localParticipant.attributes).length > 0;
-
-    // Check if only the voice attribute has changed
-    const onlyVoiceChanged = Object.keys(attributes).every(
-      (key) =>
-        key === "voice" ||
-        attributes[key] === (localParticipant.attributes[key] as string)
-    );
-
-    // If only voice changed, or if there were no existing attributes, don't update or show toast
-    if (onlyVoiceChanged) {
-      return;
-    }
-
     if (!agent?.identity) {
       return;
     }
+
+    // Skip the very first update right after connection
+    // (config was already sent via token)
+    if (!hasConnectedOnceRef.current) {
+      hasConnectedOnceRef.current = true;
+      return;
+    }
+
+    // Check if any attributes have changed
+    const hasChanges = Object.keys(attributes).some(
+      (key) => attributes[key] !== (localParticipant.attributes[key] as string)
+    );
+
+    if (!hasChanges) {
+      console.log("no changes");
+      return;
+    }
+
+    console.log("has changes, sending RPC");
 
     try {
       let response = await localParticipant.performRpc({
@@ -108,9 +111,10 @@ export function ConfigurationForm() {
   }, [
     pgState.sessionConfig,
     pgState.instructions,
+    pgState.geminiAPIKey,
     localParticipant,
     toast,
-    agent,
+    agent?.identity,
   ]);
 
   // Function to debounce updates when user stops interacting
@@ -124,6 +128,13 @@ export function ConfigurationForm() {
       updateConfig();
     }, 500); // Adjust delay as needed
   }, [updateConfig]);
+
+  // Reset connection flag when disconnected
+  useEffect(() => {
+    if (connectionState !== ConnectionState.Connected) {
+      hasConnectedOnceRef.current = false;
+    }
+  }, [connectionState]);
 
   // Propagate form upates from the user
   useEffect(() => {
@@ -147,37 +158,14 @@ export function ConfigurationForm() {
     <Form {...form}>
       <form className="h-full">
         <div className="flex flex-col h-full">
-          <div className="flex-shrink-0 py-4 px-1">
-            <div className="text-xs font-semibold uppercase tracking-widest">
+          <div className="flex-shrink-0 py-4 px-1 border-b border-separator1">
+            <div className="text-xs font-bold uppercase tracking-widest text-fg0">
               Configuration
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto py-4 pt-0">
-            <div className="space-y-4">
+          <div className="flex-grow overflow-y-auto py-4 pt-4">
+            <div className="space-y-5">
               <SessionConfig form={form} />
-
-              {pgState.sessionConfig.voice !== voice &&
-                ConnectionState.Connected === connectionState && (
-                  <div className="flex flex-col">
-                    <div className="text-xs my-2">
-                      Your change to the voice parameter requires a reconnect.
-                    </div>
-                    <div className="flex w-full">
-                      <Button
-                        className="flex-1"
-                        type="button"
-                        variant="primary"
-                        onClick={() => {
-                          disconnect().then(() => {
-                            connect();
-                          });
-                        }}
-                      >
-                        <RotateCcw className="mr-2 h-4 w-4" /> Reconnect Now
-                      </Button>
-                    </div>
-                  </div>
-                )}
             </div>
           </div>
         </div>

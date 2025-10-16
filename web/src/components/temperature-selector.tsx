@@ -51,7 +51,7 @@ export function TemperatureSelector({
             <HoverCardTrigger asChild>
               <FormItem className="px-1">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-sm">Temperature</FormLabel>
+                  <FormLabel className="text-sm font-medium text-fg1">Temperature</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -74,7 +74,7 @@ export function TemperatureSelector({
                 </FormControl>
               </FormItem>
             </HoverCardTrigger>
-            <HoverCardContent align="start" className="w-[260px]" side="bottom">
+            <HoverCardContent align="start" className="w-[260px] text-sm" side="right">
               Adjust the randomness of the response. Lowering the temperature
               will make the response more deterministic and repetitive.
             </HoverCardContent>

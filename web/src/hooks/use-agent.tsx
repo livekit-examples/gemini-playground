@@ -20,9 +20,16 @@ interface Transcription {
   publication?: TrackPublication;
 }
 
+interface GeneratedImage {
+  prompt: string;
+  imageUrl: string;
+  timestamp: number;
+}
+
 interface AgentContextType {
   displayTranscriptions: Transcription[];
   agent?: RemoteParticipant;
+  generatedImages: GeneratedImage[];
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
@@ -38,6 +45,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [displayTranscriptions, setDisplayTranscriptions] = useState<
     Transcription[]
   >([]);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,6 +89,41 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       );
     }
   }, [localParticipant, toast]);
+
+  // Listen for image data on data channel
+  useEffect(() => {
+    if (!room) return;
+
+    const handleDataReceived = (
+      payload: Uint8Array,
+      participant?: Participant,
+      kind?: any,
+      topic?: string
+    ) => {
+      if (topic === "image_generation") {
+        try {
+          const textData = new TextDecoder().decode(payload);
+          const data = JSON.parse(textData);
+          
+          if (data.type === "nano_banana_image") {
+            setGeneratedImages(prev => [...prev, {
+              prompt: data.prompt,
+              imageUrl: `data:image/jpeg;base64,${data.image}`,
+              timestamp: data.timestamp
+            }]);
+          }
+        } catch (error) {
+          console.error("Failed to parse image data:", error);
+        }
+      }
+    };
+
+    room.on(RoomEvent.DataReceived, handleDataReceived);
+
+    return () => {
+      room.off(RoomEvent.DataReceived, handleDataReceived);
+    };
+  }, [room]);
 
   useEffect(() => {
     const sorted = Object.values(rawSegments).sort(
@@ -126,11 +169,12 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     if (shouldConnect) {
       setRawSegments({});
       setDisplayTranscriptions([]);
+      setGeneratedImages([]);
     }
   }, [shouldConnect]);
 
   return (
-    <AgentContext.Provider value={{ displayTranscriptions, agent }}>
+    <AgentContext.Provider value={{ displayTranscriptions, agent, generatedImages }}>
       {children}
     </AgentContext.Provider>
   );

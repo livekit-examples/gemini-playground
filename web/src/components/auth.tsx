@@ -97,7 +97,7 @@ export function AuthDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-md p-0 border-0 rounded-lg overflow-hidden max-h-[90vh] flex flex-col"
+        className="sm:max-w-md p-0 rounded-lg overflow-hidden max-h-[90vh] flex flex-col"
         isModal={true}
       >
         <div className="overflow-y-auto">
@@ -109,10 +109,10 @@ export function AuthDialog({
               >
                 <DialogHeader className="gap-2">
                   <DialogTitle>
-                    Gemini 2.0 Multimodal Live API Playground
+                    Gemini 2.5 Multimodal Live API Playground
                   </DialogTitle>
                   <DialogDescription>
-                    Try out Google&apos;s new Gemini 2.0 Multimodal Live API
+                    Try out Google&apos;s new Gemini 2.5 Multimodal Live API
                     right from your browser with this playground built on{" "}
                     <a
                       href="https://github.com/livekit/agents"
@@ -162,14 +162,22 @@ export function AuthDialog({
                               {...field}
                             />
                           </FormControl>
-                          <Button type="submit">Connect</Button>
+                          <Button 
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onSubmit(form.getValues());
+                            }}
+                          >
+                            Connect
+                          </Button>
                         </div>
                       </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <DialogDescription className="text-xs py-2 flex justify-between items-center">
+                <div className="text-xs text-fg1 py-2 flex justify-between items-center">
                   <div className="flex items-center gap-2 flex-1">
                     <LockKeyhole className="h-3 w-3 flex-shrink-0" />
                     <span className="font-semibold">
@@ -189,7 +197,7 @@ export function AuthDialog({
                       View source on GitHub
                     </a>
                   </div>
-                </DialogDescription>
+                </div>
               </form>
             </Form>
           </div>

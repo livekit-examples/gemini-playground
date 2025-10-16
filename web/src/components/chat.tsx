@@ -15,6 +15,7 @@ import { useAgent } from "@/hooks/use-agent";
 import { useConnection } from "@/hooks/use-connection";
 import { toast } from "@/hooks/use-toast";
 import { GeminiVisualizer } from "@/components/visualizer/gemini-visualizer";
+import { NanoBananaFeed } from "@/components/nano-banana-feed";
 
 export function Chat() {
   const connectionState = useConnectionState();
@@ -126,6 +127,8 @@ export function Chat() {
               {!isEditingInstructions && renderVisualizer()}
             </div>
           </div>
+          
+          <NanoBananaFeed />
         </div>
 
         <div className="my-4">{renderConnectionControl()}</div>

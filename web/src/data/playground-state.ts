@@ -9,6 +9,7 @@ export interface SessionConfig {
   voice: VoiceId;
   temperature: number;
   maxOutputTokens: number | null;
+  nanoBananaEnabled: boolean;
 }
 
 export interface PlaygroundState {
@@ -20,11 +21,12 @@ export interface PlaygroundState {
 }
 
 export const defaultSessionConfig: SessionConfig = {
-  model: ModelId.GEMINI_2_0_FLASH_EXT,
+  model: ModelId.GEMINI_2_5_FLASH_NATIVE_AUDIO_PREVIEW_09_2025,
   modalities: ModalitiesId.AUDIO_ONLY,
   voice: VoiceId.PUCK,
   temperature: 0.8,
   maxOutputTokens: null,
+  nanoBananaEnabled: false,
 };
 
 // Define the initial state
