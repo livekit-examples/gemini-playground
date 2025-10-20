@@ -38,6 +38,7 @@ jobs:
           device_name: github-actions-${{ github.actor }}
           EOF
           
+          chmod 600 ~/.livekit/cli-config.yaml
           echo "LiveKit CLI configured"
 
       - name: Create livekit.toml
