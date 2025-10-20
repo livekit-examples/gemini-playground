@@ -2,9 +2,6 @@ name: Deploy Agent to LiveKit Cloud
 
 on:
   push:
-    branches:
-      - main
-      - master
     paths:
       - 'agent/**'
       - '.github/workflows/deploy-agent.yml'
