@@ -308,4 +308,4 @@ class SessionManager:
 
 
 if __name__ == "__main__":
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, worker_type=WorkerType.ROOM))
+    cli.run_app(WorkerOptions(agent_name='gemini-playground', entrypoint_fnc=entrypoint, worker_type=WorkerType.ROOM))
