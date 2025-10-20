@@ -61,6 +61,7 @@ export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
                       field.onChange(v);
                     }
                   }}
+                  disabled={true}
                   defaultValue={form.formState.defaultValues!.model!}
                   value={field.value}
                   aria-label="Model"

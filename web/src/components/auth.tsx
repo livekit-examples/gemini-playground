@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
+import Link from "next/link";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -114,24 +115,24 @@ export function AuthDialog({
                   <DialogDescription>
                     Try out Google&apos;s new Gemini 2.5 Multimodal Live API
                     right from your browser with this playground built on{" "}
-                    <a
+                    <Link
                       href="https://github.com/livekit/agents"
                       target="_blank"
                       className="underline"
                     >
                       LiveKit Agents
-                    </a>
+                    </Link>
                     .
                   </DialogDescription>
                   <DialogDescription>
                     You must have a valid{" "}
-                    <a
+                    <Link
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       className="underline text-gemini-blue"
                     >
                       Gemini API key
-                    </a>{" "}
+                    </Link>{" "}
                     to connect the playground to your own Gemini platform
                     account.
                   </DialogDescription>
@@ -145,14 +146,14 @@ export function AuthDialog({
                       <div className="flex flex-col gap-2">
                         <FormLabel className="font-semibold text-sm whitespace-nowrap">
                           Enter your{" "}
-                          <a
+                          <Link
                             href="https://aistudio.google.com/app/apikey"
                             target="_blank"
                             className="inline-flex items-center text-gemini-blue underline"
                           >
                             Gemini API Key
                             <ArrowUpRight className="h-4 w-4 ml-1" />
-                          </a>
+                          </Link>
                         </FormLabel>
                         <div className="flex gap-2 w-full">
                           <FormControl className="w-full">

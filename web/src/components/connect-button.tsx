@@ -55,7 +55,7 @@ export function ConnectButton() {
         onClick={handleConnectionToggle}
         disabled={connecting || shouldConnect}
         variant="primary"
-        className="text-sm font-semibold"
+        className="text-sm font-semibold p-2"
       >
         {connecting || shouldConnect ? (
           <>
@@ -63,7 +63,7 @@ export function ConnectButton() {
             Connecting
           </>
         ) : (
-          <>Start a conversation</>
+          <>Start a conversation with Gemini</>
         )}
       </Button>
       <AuthDialog
