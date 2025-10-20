@@ -24,22 +24,17 @@ jobs:
           curl -sSL https://get.livekit.io/cli | bash
           lk --version
 
-      - name: Setup LiveKit Cloud authentication
+      - name: Add LiveKit project
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
         run: |
-          mkdir -p ~/.livekit
-          
-          cat > ~/.livekit/cli-config.yaml <<EOF
-          projects:
-            - name: ${{ secrets.LIVEKIT_PROJECT_NAME }}
-              url: ${{ secrets.LIVEKIT_URL }}
-              api_key: ${{ secrets.LIVEKIT_API_KEY }}
-              api_secret: ${{ secrets.LIVEKIT_API_SECRET }}
-          default_project: ${{ secrets.LIVEKIT_PROJECT_NAME }}
-          device_name: github-actions-${{ github.actor }}
-          EOF
-          
-          chmod 600 ~/.livekit/cli-config.yaml
-          echo "LiveKit CLI configured"
+          lk project add ${{ secrets.LIVEKIT_PROJECT_NAME }} \
+            --url ${{ secrets.LIVEKIT_URL }} \
+            --api-key ${{ secrets.LIVEKIT_API_KEY }} \
+            --api-secret ${{ secrets.LIVEKIT_API_SECRET }} \
+            --default
 
       - name: Create livekit.toml
         working-directory: ${{ env.AGENT_DIR }}
@@ -51,19 +46,26 @@ jobs:
           [agent]
             id = "${{ env.LIVEKIT_AGENT_ID }}"
           EOF
-          
-          echo "livekit.toml created"
 
       - name: Deploy agent
         working-directory: ${{ env.AGENT_DIR }}
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
         run: |
           echo "Deploying agent: ${{ env.LIVEKIT_AGENT_ID }}"
-          lk agent deploy .
+          lk agent deploy --project ${{ secrets.LIVEKIT_PROJECT_NAME }} .
+          
 
       - name: Check agent status
         working-directory: ${{ env.AGENT_DIR }}
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
         run: |
-          lk agent status
+          lk agent status --project ${{ secrets.LIVEKIT_PROJECT_NAME }}
 
       - name: Deployment summary
         run: |
