@@ -22,7 +22,6 @@ jobs:
       - name: Install LiveKit CLI
         run: |
           curl -sSL https://get.livekit.io/cli | bash
-          sudo mv lk /usr/local/bin/lk
           lk --version
 
       - name: Setup LiveKit Cloud authentication
