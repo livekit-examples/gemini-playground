@@ -63,13 +63,6 @@ class SessionConfig:
 
 
 def parse_session_config(data: Dict[str, Any]) -> SessionConfig:
-    # Handle nano_banana_enabled as both bool and string
-    nano_banana = data.get("nano_banana_enabled", False)
-    if isinstance(nano_banana, str):
-        nano_banana = nano_banana.lower() == "true"
-    elif not isinstance(nano_banana, bool):
-        nano_banana = False
-    
     config = SessionConfig(
         gemini_api_key=data.get("gemini_api_key", ""),
         instructions=data.get("instructions", ""),
@@ -82,7 +75,11 @@ def parse_session_config(data: Dict[str, Any]) -> SessionConfig:
         modalities=SessionConfig._modalities_from_string(
             data.get("modalities", "audio_only")
         ),
-        nano_banana_enabled=nano_banana,
+        nano_banana_enabled=(
+            data.get("nano_banana_enabled", False).lower() == "true"
+            if isinstance(data.get("nano_banana_enabled", False), str)
+            else bool(data.get("nano_banana_enabled", False))
+        ),
     )
     return config
 
@@ -92,7 +89,14 @@ async def entrypoint(ctx: JobContext):
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
     participant = await ctx.wait_for_participant()
-    metadata = json.loads(participant.metadata)
+    
+    # Parse metadata with error handling
+    try:
+        metadata = json.loads(participant.metadata) if participant.metadata else {}
+    except json.JSONDecodeError as e:
+        logger.warning(f"Failed to parse participant metadata: {e}. Using default config.")
+        metadata = {}
+    
     config = parse_session_config(metadata)
     
     session_manager = SessionManager(config)
