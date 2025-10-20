@@ -124,17 +124,16 @@ export function PresetSelector(props: PopoverProps) {
             aria-expanded={open}
             className="flex-1 justify-between md:max-w-[200px] lg:max-w-[300px]"
           >
-            {(() => {
-              const selectedPreset = helpers.getSelectedPreset(pgState);
-              return (
-                <div className="flex items-center">
-                  {selectedPreset?.icon && (
-                    <selectedPreset.icon className="mr-2 h-4 w-4" />
-                  )}
-                  <span>{selectedPreset?.name || "Load…"}</span>
-                </div>
-              );
-            })()}
+            <div className="flex items-center">
+              {(() => {
+                const selectedPreset = helpers.getSelectedPreset(pgState);
+                if (selectedPreset?.icon) {
+                  return <selectedPreset.icon className="mr-2 h-4 w-4" />;
+                }
+                return null;
+              })()}
+              <span>{helpers.getSelectedPreset(pgState)?.name || "Load…"}</span>
+            </div>
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -228,7 +227,7 @@ export function PresetSelector(props: PopoverProps) {
                             <div className="flex items-center">
                               {preset.icon && (
                                 <preset.icon className="mr-2 h-4 w-4" />
-                              )}
+                              )}  
                               <span>{preset.name}</span>
                             </div>
                           </HoverCardTrigger>

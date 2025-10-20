@@ -22,7 +22,7 @@ export interface Preset {
   instructions: string;
   sessionConfig: SessionConfig;
   defaultGroup?: PresetGroup;
-  icon?: React.ElementType;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
 export enum PresetGroup {

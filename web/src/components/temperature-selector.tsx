@@ -21,12 +21,9 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 
 const getMinMaxForField = (schema: z.ZodNumber) => {
-  const minCheck = schema._def.checks.find((check) => check.kind === "min");
-  const maxCheck = schema._def.checks.find((check) => check.kind === "max");
-
   return {
-    minValue: minCheck ? minCheck.value : undefined,
-    maxValue: maxCheck ? maxCheck.value : undefined,
+    minValue: schema.minValue ?? undefined,
+    maxValue: schema.maxValue ?? undefined,
   };
 };
 
