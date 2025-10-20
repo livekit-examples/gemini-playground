@@ -1,0 +1,78 @@
+name: Deploy Agent to LiveKit Cloud
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'agent/**'
+      - '.github/workflows/deploy-agent.yml'
+  workflow_dispatch:
+
+env:
+  AGENT_DIR: agent
+
+jobs:
+  deploy:
+    name: Deploy to LiveKit Cloud
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install LiveKit CLI
+        run: |
+          curl -sSL https://get.livekit.io/cli | bash
+          sudo mv lk /usr/local/bin/lk
+          lk --version
+
+      - name: Setup LiveKit Cloud authentication
+        run: |
+          mkdir -p ~/.livekit
+          
+          cat > ~/.livekit/cli-config.yaml <<EOF
+          projects:
+            - name: ${{ secrets.LIVEKIT_PROJECT_NAME }}
+              url: ${{ secrets.LIVEKIT_URL }}
+              api_key: ${{ secrets.LIVEKIT_API_KEY }}
+              api_secret: ${{ secrets.LIVEKIT_API_SECRET }}
+          default_project: ${{ secrets.LIVEKIT_PROJECT_NAME }}
+          device_name: github-actions-${{ github.actor }}
+          EOF
+          
+          echo "LiveKit CLI configured"
+
+      - name: Create livekit.toml
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          cat > livekit.toml <<EOF
+          [project]
+            subdomain = "${{ secrets.LIVEKIT_PROJECT_NAME }}"
+          
+          [agent]
+            id = "${{ env.LIVEKIT_AGENT_ID }}"
+          EOF
+          
+          echo "livekit.toml created"
+
+      - name: Deploy agent
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          echo "Deploying agent: ${{ env.LIVEKIT_AGENT_ID }}"
+          lk agent deploy .
+
+      - name: Check agent status
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          lk agent status
+
+      - name: Deployment summary
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Agent ID:** ${{ env.LIVEKIT_AGENT_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+
