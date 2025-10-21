@@ -87,12 +87,10 @@ export default defineAgent({
     });
 
     const session = new voice.AgentSession({
-      llm: new google.beta.realtime.RealtimeModel({
+      llm: new google.realtime.RealtimeModel({
         model: '${pgState.sessionConfig.model}',
         voice: '${pgState.sessionConfig.voice}',
-        temperature: ${pgState.sessionConfig.temperature},
-        maxOutputTokens: ${pgState.sessionConfig.maxOutputTokens === null ? 'Infinity' : pgState.sessionConfig.maxOutputTokens},
-        modalities: ${pgState.sessionConfig.modalities == "text_and_audio" ? '["text", "audio"]' : pgState.sessionConfig.modalities === "audio_only" ? '["audio"]' : '["text"]'},
+        temperature: ${pgState.sessionConfig.temperature},${pgState.sessionConfig.maxOutputTokens !== null ? `\n\t\tmaxOutputTokens: ${pgState.sessionConfig.maxOutputTokens},` : ''}
       }),
     });
 
@@ -153,7 +151,7 @@ cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
                 to get started with the Gemini Multimodal Live API.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex gap-1 bg-bg2 p-1 rounded-lg">
+            <div className="flex gap-1 bg-bg2 p-1 mr-10 rounded-lg">
               <Button
                 variant={language === "python" ? "primary" : "ghost"}
                 size="sm"
