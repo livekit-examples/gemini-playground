@@ -10,6 +10,7 @@ import { VoiceId } from "@/data/voices";
 import { ModelId } from "@/data/models";
 import { UseFormReturn } from "react-hook-form";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
+import { useConnection } from "@/hooks/use-connection";
 import {
   useConnectionState,
   useLocalParticipant,
@@ -19,6 +20,10 @@ import { ConnectionState } from "livekit-client";
 import { defaultSessionConfig } from "@/data/playground-state";
 import { useToast } from "@/hooks/use-toast";
 import { ModalitiesId } from "@/data/modalities";
+
+// Configuration changes that require full reconnection instead of hot-reload
+const RECONNECT_REQUIRED_FIELDS = ["voice", "nano_banana_enabled"];
+
 export const ConfigurationFormSchema = z.object({
   model: z.nativeEnum(ModelId),
   modalities: z.nativeEnum(ModalitiesId),
@@ -35,6 +40,7 @@ export interface ConfigurationFormFieldProps {
 
 export function ConfigurationForm() {
   const { pgState, dispatch } = usePlaygroundState();
+  const { connect, disconnect } = useConnection();
   const connectionState = useConnectionState();
   const { localParticipant } = useLocalParticipant();
   const form = useForm<z.infer<typeof ConfigurationFormSchema>>({
@@ -45,10 +51,17 @@ export function ConfigurationForm() {
   const formValues = form.watch();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref to track timeout
   const hasConnectedOnceRef = useRef(false); // Track if we've connected once
+  const isReconnectingRef = useRef(false); // Track if we're currently reconnecting to prevent loops
   const { toast } = useToast();
   const { agent } = useVoiceAssistant();
 
   const updateConfig = useCallback(async () => {
+    // Don't update if we're currently reconnecting to prevent loops
+    if (isReconnectingRef.current) {
+      console.log("Skipping config update - reconnection in progress");
+      return;
+    }
+
     const values = pgState.sessionConfig;
     const attributes: { [key: string]: string | number | boolean } = {
       gemini_api_key: pgState.geminiAPIKey || "",
@@ -79,6 +92,49 @@ export function ConfigurationForm() {
 
     if (!hasChanges) {
       console.log("no changes");
+      return;
+    }
+
+    // Check if any critical fields changed that require full reconnection
+    const hasCriticalChanges = RECONNECT_REQUIRED_FIELDS.some(
+      (key) => String(attributes[key]) !== String(localParticipant.attributes[key])
+    );
+
+    if (hasCriticalChanges) {
+      console.log("Critical config change detected, triggering reconnection...");
+      
+      // Set reconnecting flag to prevent update loops
+      isReconnectingRef.current = true;
+    
+      try {
+        // Trigger full reconnection
+        await disconnect();
+        // Small delay to ensure clean disconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Reset the connection flag so the first update after reconnect is skipped
+        hasConnectedOnceRef.current = false;
+        
+        await connect();
+        
+        // Wait a bit longer for the connection to stabilize and attributes to sync
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        toast({
+          title: "Reconnected",
+          description: "Session reconnected with new settings.",
+          variant: "success",
+        });
+      } catch (e) {
+        toast({
+          title: "Reconnection failed",
+          description: "Failed to reconnect. Please try manually.",
+          variant: "destructive",
+        });
+      } finally {
+        // Always reset the reconnecting flag
+        isReconnectingRef.current = false;
+      }
       return;
     }
 
@@ -113,6 +169,8 @@ export function ConfigurationForm() {
     localParticipant,
     toast,
     agent?.identity,
+    connect,
+    disconnect,
   ]);
 
   // Function to debounce updates when user stops interacting
@@ -131,6 +189,7 @@ export function ConfigurationForm() {
   useEffect(() => {
     if (connectionState !== ConnectionState.Connected) {
       hasConnectedOnceRef.current = false;
+      // Don't reset isReconnectingRef here - it's managed by the reconnection flow
     }
   }, [connectionState]);
 

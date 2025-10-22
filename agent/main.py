@@ -245,6 +245,7 @@ class SessionManager:
         async def update_config(data: rtc.rpc.RpcInvocationData):
             logger.info(f"update_config called by {data.caller_identity}: {data.payload}")
             if self.current_session is None or data.caller_identity != participant.identity:
+                logger.info("update_config called by non-participant or no session")
                 return json.dumps({"changed": False})
 
             new_config = parse_session_config(json.loads(data.payload))
