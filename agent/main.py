@@ -33,6 +33,8 @@ load_dotenv(dotenv_path=".env.local")
 logger = logging.getLogger("gemini-playground")
 logger.setLevel(logging.INFO)
 
+chunk_size = 15 * 1024  # 15KiB
+
 
 @dataclass
 class SessionConfig:
@@ -165,7 +167,7 @@ def create_generate_image_tool(session_manager):
             
             # Save with lower quality
             buffer = BytesIO()
-            img.save(buffer, format='JPEG', quality=80, optimize=True)
+            img.save(buffer, format='JPEG', quality=90, optimize=True)
             compressed_bytes = buffer.getvalue()
             
             base64_image = base64.b64encode(gzip.compress(compressed_bytes, compresslevel=6)).decode('utf-8')
@@ -264,28 +266,40 @@ class SessionManager:
                 return json.dumps({"changed": False})
 
     async def send_image_to_frontend(self, prompt: str, base64_image: str):
-        """Send generated image to frontend participant via data channel"""
         if not self.ctx or not self.participant:
             logger.warning("Cannot send image: no context or participant")
             return
-        
-        payload = json.dumps({
+
+        # Send metadata first
+        metadata = {
             "prompt": prompt,
-            "image": base64_image,
             "timestamp": time.time(),
-            "type": "nano_banana_image"
-        })
-        
-        try:
-            # Use data channel instead of RPC for large payloads
-            await self.ctx.room.local_participant.publish_data(
-                payload=payload.encode('utf-8'),
-                destination_identities=[self.participant.identity],
-                topic="image_generation"
-            )
-            logger.info(f"Image sent to frontend via data channel: {prompt[:50]}...")
-        except Exception as e:
-            logger.error(f"Failed to send image via data channel: {e}")
+            "type": "nano_banana_image",
+            "total_chunks": (len(base64_image) // chunk_size) + 1
+        }
+        await self.ctx.room.local_participant.publish_data(
+            payload=json.dumps(metadata).encode('utf-8'),
+            destination_identities=[self.participant.identity],
+            topic="image_metadata"
+        )
+
+        logger.info(f"Sent metadata to frontend, total chunks: {metadata['total_chunks']}")
+
+        # Send image chunks (livekit limits the size of the data channel to ~16KiB)
+        for i in range(0, len(base64_image), chunk_size):
+            chunk = base64_image[i:i + chunk_size]
+            try:
+                logger.info(f"Sending chunk {i // chunk_size} of {metadata['total_chunks']} to frontend")
+                await self.ctx.room.local_participant.publish_data(
+                    payload=chunk.encode('utf-8'),
+                    destination_identities=[self.participant.identity],
+                    topic="image_chunk"
+                )
+            except Exception as e:
+                logger.error(f"Failed to send chunk {i // chunk_size}: {e}")
+                continue
+
+        logger.info(f"Image fully sent to frontend")
 
     @utils.log_exceptions(logger=logger)
     async def replace_session(self, ctx: JobContext, participant: rtc.RemoteParticipant, config: SessionConfig, old_config: SessionConfig):

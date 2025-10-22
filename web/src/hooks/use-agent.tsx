@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import {
   useMaybeRoomContext,
   useVoiceAssistant,
@@ -11,6 +11,7 @@ import {
   TrackPublication,
   RemoteParticipant,
   type RpcInvocationData,
+  DataPacket_Kind,
 } from "livekit-client";
 import { useConnection } from "@/hooks/use-connection";
 import { useToast } from "@/hooks/use-toast";
@@ -33,9 +34,20 @@ interface AgentContextType {
   generatedImages: GeneratedImage[];
 }
 
+type ImageMetadata = {
+  prompt: string;
+  timestamp: number;
+  type: 'nano_banana_image';
+  total_chunks?: number; 
+};
+
+type ImageChunksState = Record<string, string[]>; 
+
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
 
 export function AgentProvider({ children }: { children: React.ReactNode }) {
+  const imageMetadataRef = useRef<ImageMetadata | undefined>(undefined);
+  const [imageChunks, setImageChunks] = useState<ImageChunksState>({});
   const room = useMaybeRoomContext();
   const { shouldConnect } = useConnection();
   const { agent } = useVoiceAssistant();
@@ -93,61 +105,94 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for image data on data channel
   useEffect(() => {
-    if (!room) return;
-
+    if (!room || !room.localParticipant) return;
     const handleDataReceived = (
       payload: Uint8Array,
       participant?: Participant,
-      kind?: any,
+      kind?: DataPacket_Kind,
       topic?: string
     ) => {
-      console.log("Data received:", topic);
-      if (topic === "image_generation") {
-        try {
-          const textData = new TextDecoder().decode(payload);
-          const data = JSON.parse(textData);
-
-          if (data.type === "nano_banana_image") {
-            let imageUrl = null;
-
-            try {
-              // Decode base64 → gzip bytes
-              const gzippedBytes = Uint8Array.from(
-                atob(data.image),
-                (c) => c.charCodeAt(0)
-              );
-
-              // Decompress gzip → raw JPEG bytes
-              const decompressed = pako.ungzip(gzippedBytes);
-
-              // Convert to blob URL for rendering
-              const blob = new Blob([decompressed], { type: "image/jpeg" });
-              imageUrl = URL.createObjectURL(blob);
-            } catch (decompressError) {
-              console.error("Decompression failed:", decompressError);
-            }
-
-            if (imageUrl) {
-              setGeneratedImages(prev => [...prev, {
-                prompt: data.prompt,
-                imageUrl,
-                timestamp: data.timestamp
-              }]);
-            } else {
-              console.error("Failed to decompress image");
-            }
+      if (!topic) {
+        console.warn('Received data packet without topic');
+        return;
+      } 
+    
+      try {
+        const textData = new TextDecoder().decode(payload);
+    
+        switch (topic) {
+          case 'image_metadata': {
+            const metadata = JSON.parse(textData) as ImageMetadata;
+            imageMetadataRef.current = metadata;
+            break;
           }
-        } catch (error) {
-          console.error("Failed to parse image data:", error);
+    
+          case 'image_chunk': {
+            const chunk = textData;
+            if (!imageMetadataRef.current) {
+              console.warn('Received chunk without metadata');
+              return;
+            }
+            processImageChunk(chunk, imageMetadataRef.current);
+            break;
+          }
+    
+          default:
+            console.warn(`Unknown topic received: ${topic}`);
         }
+      } catch (error) {
+        console.error('Error processing data:', error);
       }
     };
+  
+    
+    const processImageChunk = (chunk: string, metadata: ImageMetadata) => {
+      setImageChunks(prev => {
+        const key = metadata.timestamp.toString();
+        const updatedChunks = {
+          ...prev,
+          [key]: [...(prev[key] || []), chunk]
+        };
+    
+        if (metadata.total_chunks && updatedChunks[key].length === metadata.total_chunks) {
+          const fullBase64 = updatedChunks[key].join('');
+          processFullImage(metadata, fullBase64);
+          const { [key]: _, ...rest } = updatedChunks; // Remove processed chunks
+          return rest;
+        }
+        return updatedChunks;
+      });
+    };
+    
+    const processFullImage = (metadata: ImageMetadata, base64Image: string) => {
+      try {
+        const gzippedBytes = Uint8Array.from(atob(base64Image), c => c.charCodeAt(0));
+        const decompressed = pako.ungzip(gzippedBytes);
+        const blob = new Blob([decompressed], { type: 'image/jpeg' });
+        const imageUrl = URL.createObjectURL(blob);
+    
+        setGeneratedImages(prev => [
+          ...prev,
+          {
+            prompt: metadata.prompt,
+            imageUrl,
+            timestamp: metadata.timestamp
+          }
+        ]);
+      } catch (error) {
+        console.error('Failed to decompress image:', error);
+      }
+    };
+    
+    const dataHandler = (payload: Uint8Array, participant?: Participant, kind?: DataPacket_Kind, topic?: string) => 
+      handleDataReceived(payload, participant, kind, topic);
 
-    room.on(RoomEvent.DataReceived, handleDataReceived);
+    room.on(RoomEvent.DataReceived, dataHandler);
 
     return () => {
-      room.off(RoomEvent.DataReceived, handleDataReceived);
+      room.off(RoomEvent.DataReceived, dataHandler);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room]);
 
   useEffect(() => {
