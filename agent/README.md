@@ -6,7 +6,6 @@ This directory contains a LiveKit Agent that can be deployed to LiveKit Cloud us
 
 1. **LiveKit Cloud Account**: Sign up at [cloud.livekit.io](https://cloud.livekit.io)
 2. **Google AI API Key**: Get from [Google AI Studio](https://aistudio.google.com/apikey)
-3. **GitHub Repository**: Your code must be in a GitHub repository
 
 ## Local Development
 
@@ -25,8 +24,6 @@ pip install -r requirements.txt
 
 3. Create `.env.local` file with your secrets:
 ```bash
-GOOGLE_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
 LIVEKIT_URL=your_livekit_url
 LIVEKIT_API_KEY=your_api_key
 LIVEKIT_API_SECRET=your_api_secret
@@ -35,7 +32,7 @@ LIVEKIT_API_SECRET=your_api_secret
 ### Run Locally
 
 ```bash
-python main.py start
+python main.py dev
 ```
 
 ## CI/CD Deployment to LiveKit Cloud
@@ -54,19 +51,14 @@ lk cloud auth
 
 3. **Set up GitHub Secrets and Environment Variables**:
    
-   Go to your GitHub repository → Settings → Secrets and variables → Actions
+   Go to your GitHub repository → Settings → Env → production
    
    **Add the following secrets:**
 
-   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain)
-   - `LIVEKIT_URL`: Your LiveKit Cloud URL (e.g., `wss://your-project.livekit.cloud`)
+   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain e.g. agents_c0g1)
+   - `LIVEKIT_URL`: Your full LiveKit Cloud URL (e.g., `wss://your-project.livekit.cloud`)
    - `LIVEKIT_API_KEY`: Your LiveKit API key
    - `LIVEKIT_API_SECRET`: Your LiveKit API secret
-
-   **Add the following environment variable:**
-   
-   Go to Settings → Secrets and variables → Actions → Variables tab
-   
    - `LIVEKIT_AGENT_ID`: Your agent ID (e.g., `CA_PARMnikDQoKU`)
 
    **To get LiveKit credentials:**
@@ -87,29 +79,6 @@ lk cloud auth
    - Files in the `agent/` directory change
    - Manually triggered via GitHub Actions UI
 
-### How It Works
-
-The CI/CD workflow:
-
-1. **Installs LiveKit CLI** in the GitHub Actions runner
-2. **Authenticates** with LiveKit Cloud using your secrets
-3. **Creates `livekit.toml`** automatically from environment variables
-4. **Deploys the agent** with `lk agent deploy`
-5. **Builds a Docker image** from your `Dockerfile`
-6. **Deploys to LiveKit Cloud** using rolling deployment
-
-Note: `livekit.toml` is auto-generated in CI/CD and gitignored. Keep your local copy for development.
-
-### Manual Deployment
-
-To trigger a deployment manually:
-
-1. Go to your GitHub repository
-2. Click "Actions" tab
-3. Select "Deploy Agent to LiveKit Cloud" workflow
-4. Click "Run workflow" button
-5. Select the branch and click "Run workflow"
-
 ### Monitoring
 
 After deployment:
@@ -117,21 +86,6 @@ After deployment:
 - View logs: `lk agent logs`
 - Check status: `lk agent status`
 - View in dashboard: [cloud.livekit.io/projects/p_/agents](https://cloud.livekit.io/projects/p_/agents)
-
-### Rollback
-
-To rollback to a previous version:
-
-```bash
-lk agent rollback
-```
-
-Or specify a version:
-
-```bash
-lk agent versions  # List available versions
-lk agent rollback --version <version-id>
-```
 
 ## Project Structure
 
@@ -145,26 +99,6 @@ agent/
 ├── livekit.toml        # Agent deployment config (keep local copy, gitignored)
 └── README.md           # This file
 ```
-
-## Troubleshooting
-
-### Build Fails
-
-- Check that your `Dockerfile` is valid
-- Ensure all dependencies are in `requirements.txt`
-- View build logs: `lk agent logs --log-type build`
-
-### Agent Crashes
-
-- Check deploy logs: `lk agent logs --log-type deploy`
-- Verify all required secrets are set
-- Test locally first with `.env.local`
-
-### Secrets Not Working
-
-- Ensure secrets are set in GitHub repository settings
-- Secret names must match exactly (case-sensitive)
-- Re-deploy after updating secrets
 
 ## Resources
 
