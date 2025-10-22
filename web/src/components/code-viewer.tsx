@@ -74,9 +74,10 @@ if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
 `;
 
-  const typescriptCode = `import { defineAgent, type JobContext, type JobProcess, WorkerOptions, cli, voice } from '@livekit/agents';
+  const typescriptCode = `import { defineAgent, type JobContext, WorkerOptions, cli, voice } from '@livekit/agents';
 import * as google from '@livekit/agents-plugin-google';
 import { fileURLToPath } from 'node:url';
+import { Modality } from '@google/genai';
 
 export default defineAgent({
   entry: async (ctx: JobContext) => {
@@ -87,11 +88,12 @@ export default defineAgent({
     });
 
     const session = new voice.AgentSession({
-      llm: new google.realtime.RealtimeModel({
+      llm: new google.beta.realtime.RealtimeModel({
         model: '${pgState.sessionConfig.model}',
         voice: '${pgState.sessionConfig.voice}',
-        temperature: ${pgState.sessionConfig.temperature},${pgState.sessionConfig.maxOutputTokens !== null ? `\n\t\tmaxOutputTokens: ${pgState.sessionConfig.maxOutputTokens},` : ''}
-        modalities: ${pgState.sessionConfig.modalities == "text_and_audio" ? '[google.types.Modality.TEXT, google.types.Modality.AUDIO]' : pgState.sessionConfig.modalities === "audio_only" ? '[google.types.Modality.AUDIO]' : '[google.types.Modality.TEXT]'},
+        temperature: ${pgState.sessionConfig.temperature},${pgState.sessionConfig.maxOutputTokens !== null ? `
+        maxOutputTokens: ${pgState.sessionConfig.maxOutputTokens},` : ''}
+        modalities: ${pgState.sessionConfig.modalities == "text_and_audio" ? '[Modality.TEXT, Modality.AUDIO]' : pgState.sessionConfig.modalities === "audio_only" ? '[Modality.AUDIO]' : '[Modality.TEXT]'},
       }),
     });
 

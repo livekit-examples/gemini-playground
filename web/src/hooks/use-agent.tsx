@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   useMaybeRoomContext,
   useVoiceAssistant,
@@ -11,11 +11,9 @@ import {
   TrackPublication,
   RemoteParticipant,
   type RpcInvocationData,
-  DataPacket_Kind,
 } from "livekit-client";
 import { useConnection } from "@/hooks/use-connection";
 import { useToast } from "@/hooks/use-toast";
-import pako from "pako";
 interface Transcription {
   segment: TranscriptionSegment;
   participant?: Participant;
@@ -34,20 +32,9 @@ interface AgentContextType {
   generatedImages: GeneratedImage[];
 }
 
-type ImageMetadata = {
-  prompt: string;
-  timestamp: number;
-  type: 'nano_banana_image';
-  total_chunks?: number; 
-};
-
-type ImageChunksState = Record<string, string[]>; 
-
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
 
 export function AgentProvider({ children }: { children: React.ReactNode }) {
-  const imageMetadataRef = useRef<ImageMetadata | undefined>(undefined);
-  const [imageChunks, setImageChunks] = useState<ImageChunksState>({});
   const room = useMaybeRoomContext();
   const { shouldConnect } = useConnection();
   const { agent } = useVoiceAssistant();
@@ -103,96 +90,46 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     }
   }, [localParticipant, toast]);
 
-  // Listen for image data on data channel
+  // Register byte stream handler for images
   useEffect(() => {
-    if (!room || !room.localParticipant) return;
-    const handleDataReceived = (
-      payload: Uint8Array,
-      participant?: Participant,
-      kind?: DataPacket_Kind,
-      topic?: string
-    ) => {
-      if (!topic) {
-        console.warn('Received data packet without topic');
-        return;
-      } 
-    
+    if (!room) return;
+
+    const handleByteStream = async (reader: any, participantInfo: any) => {
       try {
-        const textData = new TextDecoder().decode(payload);
-    
-        switch (topic) {
-          case 'image_metadata': {
-            const metadata = JSON.parse(textData) as ImageMetadata;
-            imageMetadataRef.current = metadata;
-            break;
-          }
-    
-          case 'image_chunk': {
-            const chunk = textData;
-            if (!imageMetadataRef.current) {
-              console.warn('Received chunk without metadata');
-              return;
-            }
-            processImageChunk(chunk, imageMetadataRef.current);
-            break;
-          }
-    
-          default:
-            console.warn(`Unknown topic received: ${topic}`);
-        }
-      } catch (error) {
-        console.error('Error processing data:', error);
-      }
-    };
-  
-    
-    const processImageChunk = (chunk: string, metadata: ImageMetadata) => {
-      setImageChunks(prev => {
-        const key = metadata.timestamp.toString();
-        const updatedChunks = {
-          ...prev,
-          [key]: [...(prev[key] || []), chunk]
-        };
-    
-        if (metadata.total_chunks && updatedChunks[key].length === metadata.total_chunks) {
-          const fullBase64 = updatedChunks[key].join('');
-          processFullImage(metadata, fullBase64);
-          const { [key]: _, ...rest } = updatedChunks; // Remove processed chunks
-          return rest;
-        }
-        return updatedChunks;
-      });
-    };
-    
-    const processFullImage = (metadata: ImageMetadata, base64Image: string) => {
-      try {
-        const gzippedBytes = Uint8Array.from(atob(base64Image), c => c.charCodeAt(0));
-        const decompressed = pako.ungzip(gzippedBytes);
-        const blob = new Blob([decompressed], { type: 'image/jpeg' });
+        console.log('Byte stream received:', reader.info);
+        
+        // Get the prompt from attributes
+        const prompt = reader.info.attributes?.prompt || 'Generated image';
+        const timestamp = reader.info.timestamp || Date.now();
+        
+        // Read all chunks from the stream
+        const chunks = await reader.readAll();
+        
+        // Create a blob from the chunks
+        const blob = new Blob(chunks, { type: reader.info.mimeType || 'image/jpeg' });
         const imageUrl = URL.createObjectURL(blob);
-    
+        
+        // Add to generated images
         setGeneratedImages(prev => [
           ...prev,
           {
-            prompt: metadata.prompt,
+            prompt,
             imageUrl,
-            timestamp: metadata.timestamp
+            timestamp
           }
         ]);
+        
+        console.log('Image received and processed:', prompt);
       } catch (error) {
-        console.error('Failed to decompress image:', error);
+        console.error('Failed to process byte stream:', error);
       }
     };
-    
-    const dataHandler = (payload: Uint8Array, participant?: Participant, kind?: DataPacket_Kind, topic?: string) => 
-      handleDataReceived(payload, participant, kind, topic);
 
-    room.on(RoomEvent.DataReceived, dataHandler);
+    room.registerByteStreamHandler('nano_banana_image', handleByteStream);
 
     return () => {
-      room.off(RoomEvent.DataReceived, dataHandler);
+      room.unregisterByteStreamHandler('nano_banana_image');
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room]);
 
   useEffect(() => {
