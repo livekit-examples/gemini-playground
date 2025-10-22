@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Mic, MicOff } from "lucide-react";
+import { ChevronDown, Mic, MicOff, PhoneOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -40,7 +40,7 @@ export function SessionControls() {
 
   return (
     <div className="flex flex-row gap-2">
-      <div className="flex items-center rounded-md bg-bg2 text-secondary-foreground">
+      <div className="flex items-center rounded-md bg-bg2 text-secondary-foreground overflow-hidden">
         <div className="flex items-center gap-2">
           <TrackToggle
             source={Track.Source.Microphone}
@@ -70,7 +70,7 @@ export function SessionControls() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="secondary"
-              className="px-2.5 bg-bg2 shadow-none hover:bg-bg3 rounded-l-none border-l-[1px] border-separator1 text-sm font-semibold"
+              className="h-9 px-3 bg-bg2 shadow-none hover:bg-bg3 rounded-l-none rounded-r-md border-l-[1px] border-separator1 text-sm font-semibold"
             >
               <ChevronDown className="h-4 w-4 text-fg3" />
             </Button>
@@ -114,7 +114,8 @@ export function SessionControls() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Button variant="destructive" onClick={disconnect}>
+      <Button variant="destructive" onClick={disconnect} className="h-9">
+        <PhoneOff className="h-4 w-4" />
         Disconnect
       </Button>
     </div>

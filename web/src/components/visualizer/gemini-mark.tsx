@@ -6,19 +6,23 @@ import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { AgentState } from "@livekit/components-react";
+import { useTheme } from "next-themes";
 
 const accentColor = "#5282ed";
-const disconnectedColor = "#030303";
 
-const Shape: React.FC<{ volume: number; state: AgentState }> = ({
+const Shape: React.FC<{ volume: number; state: AgentState; theme?: string }> = ({
   volume,
   state,
+  theme,
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
 
   const emissiveColor = useRef(new THREE.Color(accentColor));
   const targetColor = useRef(new THREE.Color(accentColor));
   const isDisconnected = state === "disconnected";
+  
+  // Theme-aware disconnected color
+  const disconnectedColor = theme === "light" ? "#1a1a1a" : "#3a3a3a";
 
   useFrame((frameState) => {
     if (meshRef.current) {
@@ -117,7 +121,7 @@ const Shape: React.FC<{ volume: number; state: AgentState }> = ({
     metalness: isDisconnected ? 0.2 : 0.6,
     side: THREE.DoubleSide,
     emissive: emissiveColor.current,
-    emissiveIntensity: isDisconnected ? 0.5 : volume > 0 ? 3.5 : 0.25,
+    emissiveIntensity: isDisconnected ? 1.2 : volume > 0 ? 3.5 : 0.25,
   });
 
   return <mesh ref={meshRef} geometry={geometry} material={material} />;
@@ -130,15 +134,18 @@ export const GeminiMark = ({
   volume: number;
   state: AgentState;
 }) => {
+  const { theme, resolvedTheme } = useTheme();
+  const currentTheme = theme === "system" ? resolvedTheme : theme;
+  
   return (
     <Canvas camera={{ position: [0, 0, 6], fov: 60 }}>
       <ambientLight intensity={1} />
       <pointLight position={[2, 0, 0]} intensity={5} />
-      <Shape volume={volume} state={state} />
+      <Shape volume={volume} state={state} theme={currentTheme} />
       <Environment preset="night" background={false} />
       <EffectComposer>
         <Bloom
-          intensity={volume > 0 ? 2 : 0}
+          intensity={state === "disconnected" ? 0.5 : volume > 0 ? 2 : 0}
           radius={50}
           luminanceThreshold={0.0}
           luminanceSmoothing={1}

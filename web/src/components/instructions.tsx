@@ -17,7 +17,7 @@ export function Instructions() {
 
   return (
     <div
-      className={`flex flex-1 flex-col w-full gap-[4px] text-neutral-300 bg-neutral-950  shadow-md p-4 rounded-lg overflow-y-auto`}
+      className={`flex flex-1 flex-col w-full min-w-0 gap-[4px] text-neutral-300 bg-neutral-950  shadow-md p-4 rounded-lg overflow-y-auto overflow-x-hidden`}
     >
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center">

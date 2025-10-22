@@ -86,7 +86,11 @@ export function Chat() {
   const renderVisualizer = () => (
     <div className="flex w-full items-center">
       <div className="h-[280px] lg:h-[400px] mt-16 md:mt-0 lg:pb-24 w-full">
-        <GeminiVisualizer agentState={state} agentTrackRef={audioTrack} />
+        <GeminiVisualizer 
+          key={audioTrack?.publication?.trackSid || 'no-track'} 
+          agentState={state} 
+          agentTrackRef={audioTrack} 
+        />
       </div>
     </div>
   );
@@ -106,25 +110,29 @@ export function Chat() {
   );
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4">
+    <div className="flex flex-col h-full overflow-hidden p-2 lg:p-4 min-w-0">
       <ChatControls
         showEditButton={isChatRunning}
         isEditingInstructions={isEditingInstructions}
         onToggleEdit={toggleInstructionsEdit}
       />
-      <div className="flex flex-col flex-grow items-center lg:justify-between mt-12 lg:mt-0">
-        <div className="w-full h-full flex flex-col">
-          <div className="flex items-center justify-center w-full">
-            <div className="lg:hidden w-full">
-              {!isEditingInstructions ? renderVisualizer() : <Instructions />}
-            </div>
-            <div className="hidden lg:block w-full">
+      <div className="flex flex-col flex-grow items-center lg:justify-between mt-12 lg:mt-0 min-w-0">
+        <div className="w-full h-full flex flex-col min-w-0 gap-4">
+          {/* Mobile: Show instructions and visualizer stacked */}
+          <div className="lg:hidden w-full min-w-0 flex flex-col gap-4">
+            <Instructions />
+            {renderVisualizer()}
+          </div>
+          
+          {/* Desktop: Show instructions at top, visualizer in middle */}
+          <div className="hidden lg:flex lg:flex-col lg:h-full lg:min-w-0 w-full">
+            <div className="flex items-center justify-center w-full min-w-0">
               <Instructions />
             </div>
-          </div>
-          <div className="grow h-full flex items-center justify-center">
-            <div className="w-full hidden lg:block">
-              {!isEditingInstructions && renderVisualizer()}
+            <div className="grow h-full flex items-center justify-center min-w-0">
+              <div className="w-full min-w-0">
+                {!isEditingInstructions && renderVisualizer()}
+              </div>
             </div>
           </div>
           

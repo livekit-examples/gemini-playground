@@ -1,19 +1,9 @@
 "use client";
 
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
   ConfigurationFormFieldProps,
-  ConfigurationFormSchema,
 } from "@/components/configuration-form";
 import {
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -38,36 +28,9 @@ export function ModalitiesSelector({
           <HoverCardTrigger asChild>
             <FormItem className="flex flex-row items-center space-y-0 justify-between px-1">
               <FormLabel className="text-sm font-medium text-fg1">Response modalities</FormLabel>
-              <Select
-                onValueChange={(v) => {
-                  if (
-                    ConfigurationFormSchema.shape.modalities.safeParse(v)
-                      .success
-                  ) {
-                    field.onChange(v);
-                  }
-                }}
-                defaultValue={form.formState.defaultValues!.modalities!}
-                value={field.value}
-                aria-label="Response modalities"
-                disabled={true}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose modalities" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {modalities.map((modality) => (
-                    <SelectItem
-                      key={`select-item-modality-${modality.id}`}
-                      value={modality.id}
-                    >
-                      {modality.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="text-sm text-fg2 cursor-help">
+                {modalities.find(m => m.id === field.value)?.name || field.value}
+              </div>
             </FormItem>
           </HoverCardTrigger>
           <HoverCardContent

@@ -50,17 +50,15 @@ export function ConfigurationForm() {
 
   const updateConfig = useCallback(async () => {
     const values = pgState.sessionConfig;
-    const attributes: { [key: string]: string } = {
+    const attributes: { [key: string]: string | number | boolean } = {
       gemini_api_key: pgState.geminiAPIKey || "",
       instructions: pgState.instructions,
       model: values.model,
       voice: values.voice,
       modalities: values.modalities,
-      temperature: values.temperature.toString(),
-      max_output_tokens: values.maxOutputTokens
-        ? values.maxOutputTokens.toString()
-        : "",
-      nano_banana_enabled: values.nanoBananaEnabled.toString(),
+      temperature: values.temperature,
+      max_output_tokens: values.maxOutputTokens || "",
+      nano_banana_enabled: values.nanoBananaEnabled,
     };
     if (!agent?.identity) {
       return;
@@ -74,8 +72,9 @@ export function ConfigurationForm() {
     }
 
     // Check if any attributes have changed
+    // Convert both to strings for comparison since attributes are stored as strings
     const hasChanges = Object.keys(attributes).some(
-      (key) => attributes[key] !== (localParticipant.attributes[key] as string)
+      (key) => String(attributes[key]) !== String(localParticipant.attributes[key])
     );
 
     if (!hasChanges) {
@@ -95,8 +94,7 @@ export function ConfigurationForm() {
       let responseObj = JSON.parse(response);
       if (responseObj.changed) {
         toast({
-          title: "Configuration Updated",
-          description: "Your changes have been applied successfully.",
+          title: "Configuration updated",
           variant: "success",
         });
       }

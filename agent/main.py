@@ -63,6 +63,17 @@ class SessionConfig:
 
 
 def parse_session_config(data: Dict[str, Any]) -> SessionConfig:
+    # Parse nano_banana_enabled - handle both boolean and string types
+    nano_banana_value = data.get("nano_banana_enabled", False)
+    if isinstance(nano_banana_value, bool):
+        nano_banana_enabled = nano_banana_value
+    elif isinstance(nano_banana_value, str):
+        nano_banana_enabled = nano_banana_value.lower() == "true"
+    else:
+        nano_banana_enabled = bool(nano_banana_value)
+    
+    logger.debug(f"Parsing config - nano_banana_enabled: {nano_banana_value} (type: {type(nano_banana_value).__name__}) -> {nano_banana_enabled}")
+    
     config = SessionConfig(
         gemini_api_key=data.get("gemini_api_key", ""),
         instructions=data.get("instructions", ""),
@@ -75,11 +86,7 @@ def parse_session_config(data: Dict[str, Any]) -> SessionConfig:
         modalities=SessionConfig._modalities_from_string(
             data.get("modalities", "audio_only")
         ),
-        nano_banana_enabled=(
-            data.get("nano_banana_enabled", False).lower() == "true"
-            if isinstance(data.get("nano_banana_enabled", False), str)
-            else bool(data.get("nano_banana_enabled", False))
-        ),
+        nano_banana_enabled=nano_banana_enabled,
     )
     return config
 
@@ -107,17 +114,31 @@ async def entrypoint(ctx: JobContext):
 
 def create_generate_image_tool(session_manager):
     """Factory function to create the generate_image tool with access to session_manager"""
+
+    raw_schema = {
+        "type": "function",
+        "name": "generate_image",
+        "description": "Generate an image using Nano Banana and send it to the user",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "Creative, detailed, and sophisticated description of the image to generate (e.g., 'a cat eating a nano-banana in a fancy restaurant'), not simply a few words. Not a generic prompt such as 'image of a cat' or 'random image'."
+                }
+            },
+            "required": [
+                "prompt"
+            ],
+            "additionalProperties": False
+        }
+    }
     
-    @function_tool()
-    async def generate_image(prompt: str) -> str:
-        """Generate an image using Google's Imagen-3 model (Nano Banana 🍌).
+    @function_tool(raw_schema=raw_schema)
+    async def generate_image(raw_arguments: dict) -> str:
+        # Extract prompt from raw_arguments when using raw_schema
+        prompt = raw_arguments["prompt"]
         
-        Args:
-            prompt: Description of the image to generate (e.g., 'a cat eating a nano-banana in a fancy restaurant')
-            
-        Returns:
-            Confirmation message that the image was generated
-        """
         try:
             client = genai.Client(api_key=session_manager.current_config.gemini_api_key)
             
@@ -143,7 +164,7 @@ def create_generate_image_tool(session_manager):
             
             # Save with lower quality
             buffer = BytesIO()
-            img.save(buffer, format='JPEG', quality=60, optimize=True)
+            img.save(buffer, format='JPEG', quality=80, optimize=True)
             compressed_bytes = buffer.getvalue()
             
             base64_image = base64.b64encode(compressed_bytes).decode('utf-8')
@@ -231,10 +252,13 @@ class SessionManager:
                 logger.info(
                     f"config changed: {new_config.to_dict()}, participant: {participant.identity}"
                 )
+                # Pass old config before updating, so replace_session can detect what changed
+                old_config = self.current_config
                 self.current_config = new_config
-                await self.replace_session(ctx, participant, new_config)
+                await self.replace_session(ctx, participant, new_config, old_config)
                 return json.dumps({"changed": True})
             else:
+                logger.info("config not changed at all")
                 return json.dumps({"changed": False})
 
     async def send_image_to_frontend(self, prompt: str, base64_image: str):
@@ -262,7 +286,7 @@ class SessionManager:
             logger.error(f"Failed to send image via data channel: {e}")
 
     @utils.log_exceptions(logger=logger)
-    async def replace_session(self, ctx: JobContext, participant: rtc.RemoteParticipant, config: SessionConfig):
+    async def replace_session(self, ctx: JobContext, participant: rtc.RemoteParticipant, config: SessionConfig, old_config: SessionConfig):
         """Replace the current session with a new one using updated config"""
         if self.current_session is None or self.current_agent is None:
             return
@@ -275,16 +299,20 @@ class SessionManager:
         except Exception as e:
             logger.warning(f"Could not preserve chat context: {e}")
         
+        # Track if nano banana is being newly enabled (compare old vs new config)
+        was_nano_banana_enabled = old_config.nano_banana_enabled
+        is_nano_banana_enabled = config.nano_banana_enabled
+        nano_banana_newly_enabled = not was_nano_banana_enabled and is_nano_banana_enabled
+        
+        logger.info(f"Nano Banana status: was={was_nano_banana_enabled}, now={is_nano_banana_enabled}, newly_enabled={nano_banana_newly_enabled}")
+        
         # End current session
         await self.current_session.aclose()
         
         # Conditionally add nano banana tool
         tools = []
         if config.nano_banana_enabled:
-            logger.info("Nano Banana tool enabled 🍌")
             tools.append(create_generate_image_tool(self))
-        else:
-            logger.info("Nano Banana tool disabled")
         
         # Create new session with updated config
         self.current_session = self.create_session(config)
@@ -302,9 +330,19 @@ class SessionManager:
         )
         
         # Notify user about the config change
-        await self.current_session.generate_reply(
-            instructions="Briefly acknowledge that your configuration has been updated and you're ready to continue."
-        )
+        try:
+            if nano_banana_newly_enabled:
+                logger.info("Nano Banana tool newly enabled")
+                await self.current_session.generate_reply(
+                    instructions="Briefly and enthusiastically announce: 'Nano Banana now active, feel free to ask me to generate an image and I can show you whatever you like!'",
+                )
+            else:
+                logger.info("Session restarted with new config")
+                await self.current_session.generate_reply(
+                    instructions=  is_nano_banana_enabled and "Briefly acknowledge that your configuration has been updated and you're ready to continue and announce that you can also generate images now!" or "Briefly acknowledge that your configuration has been updated and you're ready to continue"
+                )
+        except Exception as e:
+            logger.error(f"Failed to notify user about config change: {e}")
 
 
 if __name__ == "__main__":

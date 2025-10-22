@@ -2,16 +2,7 @@
 
 import * as React from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
   FormField,
-  FormControl,
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
@@ -22,9 +13,8 @@ import {
 } from "@/components/ui/hover-card";
 import {
   ConfigurationFormFieldProps,
-  ConfigurationFormSchema,
 } from "@/components/configuration-form";
-import { models, modelsData } from "@/data/models";
+import { modelsData } from "@/data/models";
 import { ModelsShowcase } from "@/components/models-showcase";
 
 export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
@@ -40,9 +30,7 @@ export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
             <FormLabel className="text-sm font-medium text-fg1">Model</FormLabel>
             <ModelsShowcase 
               onSelectModel={(modelId) => {
-                if (ConfigurationFormSchema.shape.model.safeParse(modelId).success) {
-                  field.onChange(modelId);
-                }
+                field.onChange(modelId);
               }}
               currentModel={field.value}
               onOpenChange={(open) => {
@@ -52,36 +40,8 @@ export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
           </div>
           <HoverCard openDelay={200} open={hoverCardOpen} onOpenChange={setHoverCardOpen}>
             <HoverCardTrigger asChild>
-              <div>
-                <Select
-                  onValueChange={(v) => {
-                    if (
-                      ConfigurationFormSchema.shape.model.safeParse(v).success
-                    ) {
-                      field.onChange(v);
-                    }
-                  }}
-                  disabled={true}
-                  defaultValue={form.formState.defaultValues!.model!}
-                  value={field.value}
-                  aria-label="Model"
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose model" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {models.map((model) => (
-                      <SelectItem
-                        key={`select-item-model-${model.id}`}
-                        value={model.id}
-                      >
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="text-sm text-fg2 cursor-help">
+                {modelsData[field.value]?.name || field.value}
               </div>
             </HoverCardTrigger>
             <HoverCardContent

@@ -35,9 +35,8 @@ export async function POST(request: Request) {
     const roomName = Math.random().toString(36).slice(7);
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
-    const agentId = process.env.LIVEKIT_AGENT_ID;
-    if (!apiKey || !apiSecret || !agentId) {
-      throw new Error("LIVEKIT_API_KEY, LIVEKIT_API_SECRET and LIVEKIT_AGENT_ID must be set");
+    if (!apiKey || !apiSecret) {
+      throw new Error("LIVEKIT_API_KEY and LIVEKIT_API_SECRET must be set");
     }
 
     // Create metadata for agent to start with
@@ -48,8 +47,8 @@ export async function POST(request: Request) {
       voice: voice,
       temperature: temperature,
       max_output_tokens: maxOutputTokens,
-      nano_banana_enabled: Boolean(nanoBananaEnabled),
-      gemini_api_key: String(geminiAPIKey),
+      nano_banana_enabled: nanoBananaEnabled, // Send as boolean, not string
+      gemini_api_key: geminiAPIKey,
     };
     
     // Create access token
@@ -83,7 +82,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return Response.json(
-      { error: "Error generating token", details: error },
+      { error: "Error generating token", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

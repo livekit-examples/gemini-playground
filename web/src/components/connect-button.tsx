@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useConnection } from "@/hooks/use-connection";
-import { Loader2 } from "lucide-react";
+import { Loader2, PhoneCall } from "lucide-react";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
 import { AuthDialog } from "./auth";
 
@@ -55,7 +55,7 @@ export function ConnectButton() {
         onClick={handleConnectionToggle}
         disabled={connecting || shouldConnect}
         variant="primary"
-        className="text-sm font-semibold p-2"
+        className="text-sm font-semibold p-2 h-9"
       >
         {connecting || shouldConnect ? (
           <>
@@ -63,7 +63,10 @@ export function ConnectButton() {
             Connecting
           </>
         ) : (
-          <>Start a conversation with Gemini</>
+          <>
+            <PhoneCall className="h-4 w-4 mr-2" />
+            Start a conversation with Gemini
+          </>
         )}
       </Button>
       <AuthDialog
