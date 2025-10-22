@@ -55,6 +55,7 @@
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
     "next-themes": "^0.4.6",
+    "pako": "^2.1.0",
     "posthog-js": "^1.188.0",
     "postprocessing": "^6.36.6",
     "react": "19.1.0",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pako": "^2.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",

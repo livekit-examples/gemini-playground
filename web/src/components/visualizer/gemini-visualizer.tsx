@@ -30,7 +30,7 @@ export function GeminiVisualizer({
         perspective: "1000px",
       }}
     >
-      <div className="absolute z-0 left-1/2 top-1/4 -translate-x-1/2 -translate-y-10 opacity-[0.01]">
+      <div className="absolute z-0 left-1/2 top-1/4 -translate-x-1/2 -translate-y-10 opacity-[0.05]" >
         <Logo height="64" />
       </div>
       <GeminiMark volume={agentVolume} state={agentState} />

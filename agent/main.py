@@ -7,6 +7,7 @@ import logging
 import time
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List
+import gzip
 
 from PIL import Image
 from io import BytesIO
@@ -167,7 +168,7 @@ def create_generate_image_tool(session_manager):
             img.save(buffer, format='JPEG', quality=80, optimize=True)
             compressed_bytes = buffer.getvalue()
             
-            base64_image = base64.b64encode(compressed_bytes).decode('utf-8')
+            base64_image = base64.b64encode(gzip.compress(compressed_bytes, compresslevel=6)).decode('utf-8')
             
             # Send image to frontend via data channel
             if session_manager.ctx and session_manager.participant:

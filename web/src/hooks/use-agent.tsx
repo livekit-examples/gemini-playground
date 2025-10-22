@@ -14,6 +14,7 @@ import {
 } from "livekit-client";
 import { useConnection } from "@/hooks/use-connection";
 import { useToast } from "@/hooks/use-toast";
+import pako from "pako";
 interface Transcription {
   segment: TranscriptionSegment;
   participant?: Participant;
@@ -100,17 +101,41 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       kind?: any,
       topic?: string
     ) => {
+      console.log("Data received:", topic);
       if (topic === "image_generation") {
         try {
           const textData = new TextDecoder().decode(payload);
           const data = JSON.parse(textData);
-          
+
           if (data.type === "nano_banana_image") {
-            setGeneratedImages(prev => [...prev, {
-              prompt: data.prompt,
-              imageUrl: `data:image/jpeg;base64,${data.image}`,
-              timestamp: data.timestamp
-            }]);
+            let imageUrl = null;
+
+            try {
+              // Decode base64 → gzip bytes
+              const gzippedBytes = Uint8Array.from(
+                atob(data.image),
+                (c) => c.charCodeAt(0)
+              );
+
+              // Decompress gzip → raw JPEG bytes
+              const decompressed = pako.ungzip(gzippedBytes);
+
+              // Convert to blob URL for rendering
+              const blob = new Blob([decompressed], { type: "image/jpeg" });
+              imageUrl = URL.createObjectURL(blob);
+            } catch (decompressError) {
+              console.error("Decompression failed:", decompressError);
+            }
+
+            if (imageUrl) {
+              setGeneratedImages(prev => [...prev, {
+                prompt: data.prompt,
+                imageUrl,
+                timestamp: data.timestamp
+              }]);
+            } else {
+              console.error("Failed to decompress image");
+            }
           }
         } catch (error) {
           console.error("Failed to parse image data:", error);
