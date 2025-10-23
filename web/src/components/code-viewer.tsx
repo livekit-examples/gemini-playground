@@ -22,9 +22,27 @@ export function CodeViewer() {
 
   const formatInstructions = (
     instructions: string,
+    escapeMode: 'python' | 'typescript' = 'python',
     maxLineLength: number = 80
   ): string => {
-    return instructions
+    // Escape based on target language
+    // Always escape backslashes first to prevent double-escaping issues
+    let escaped: string;
+    
+    if (escapeMode === 'python') {
+      // For Python triple-quoted strings: escape backslashes, then double quotes
+      escaped = instructions
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"');
+    } else {
+      // For TypeScript template literals: escape backslashes, then backticks and dollar signs
+      escaped = instructions
+        .replace(/\\/g, '\\\\')
+        .replace(/`/g, '\\`')
+        .replace(/\$/g, '\\$');
+    }
+    
+    return escaped
       .split(/\s+/)
       .reduce(
         (lines, word) => {
@@ -61,7 +79,7 @@ async def entrypoint(ctx: JobContext):
     await session.start(
         room=ctx.room,
         agent=Agent(
-            instructions="""${formatInstructions(pgState.instructions.replace(/"/g, '\\"'))}"""
+            instructions="""${formatInstructions(pgState.instructions)}"""
         )
     )
 
@@ -84,7 +102,7 @@ export default defineAgent({
     await ctx.connect();
 
     const agent = new voice.Agent({
-      instructions: \`${formatInstructions(pgState.instructions.replace(/`/g, '\\`').replace(/\$/g, '\\$'))}\`,
+      instructions: \`${formatInstructions(pgState.instructions, 'typescript')}\`,
     });
 
     const session = new voice.AgentSession({
