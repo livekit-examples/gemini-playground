@@ -100,6 +100,9 @@ export function ConfigurationForm() {
       (key) => String(attributes[key]) !== String(localParticipant.attributes[key])
     );
 
+    //const listOfThingsThatChanged = Object.keys(attributes).filter(key => String(attributes[key]) !== String(localParticipant.attributes[key]));
+    //console.log("listOfThingsThatChanged: ", listOfThingsThatChanged);
+
     if (hasCriticalChanges) {
       console.log("Critical config change detected, triggering reconnection...");
       

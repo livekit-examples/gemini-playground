@@ -13,10 +13,10 @@ export function Header() {
           <div className="flex flex-row items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">
-                Multimodal Live Playground
+                Live API Playground
               </h2>
               <p className="text-sm text-gray-500">
-                Try Google&apos;s new Gemini 2.5 Multimodal Live API right from
+                Try Google&apos;s new Gemini 2.5 Live API right from
                 your browser.
               </p>
             </div>

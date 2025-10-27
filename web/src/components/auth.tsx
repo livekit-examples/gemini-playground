@@ -110,10 +110,10 @@ export function AuthDialog({
               >
                 <DialogHeader className="gap-2">
                   <DialogTitle>
-                    Gemini 2.5 Multimodal Live API Playground
+                    Gemini 2.5 Live API Playground
                   </DialogTitle>
                   <DialogDescription>
-                    Try out Google&apos;s new Gemini 2.5 Multimodal Live API
+                    Try out Google&apos;s new Gemini 2.5 Live API
                     right from your browser with this playground built on{" "}
                     <Link
                       href="https://github.com/livekit/agents"

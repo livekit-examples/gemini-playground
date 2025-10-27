@@ -55,7 +55,7 @@ export function ModelsShowcase({ onSelectModel, currentModel, onOpenChange }: Mo
               Available Models
             </DialogTitle>
             <DialogDescription className="text-base text-fg1 mt-2">
-              Choose from {models.length} Gemini models optimized for multimodal live interactions.
+              Choose from {models.length} Gemini models optimized for live interactions.
             </DialogDescription>
           </DialogHeader>
         </div>

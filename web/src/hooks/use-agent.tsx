@@ -92,7 +92,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   // Register byte stream handler for images
   useEffect(() => {
-    if (!room) return;
+    if (!room || !shouldConnect) return;
 
     const handleByteStream = async (reader: any, participantInfo: any) => {
       try {
@@ -130,7 +130,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     return () => {
       room.unregisterByteStreamHandler('nano_banana_image');
     };
-  }, [room]);
+  }, [room, shouldConnect]);
 
   useEffect(() => {
     const sorted = Object.values(rawSegments).sort(

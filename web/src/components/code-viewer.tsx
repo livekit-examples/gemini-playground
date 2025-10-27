@@ -87,6 +87,29 @@ async def entrypoint(ctx: JobContext):
         instructions="Greet the user and offer your assistance."
     )
 
+${pgState.sessionConfig.nanoBananaEnabled ? `
+# Image generation is enabled in this playground!
+# To add image generation to your agent, see the full implementation:
+# https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
+# 
+# Key concepts:
+# 1. Define function tools for the agent to call
+# 2. Use Google's Gemini image generation API
+# 3. Use LiveKit's stream_bytes to send images to the frontend
+# 4. Receive byte streams on the frontend with registerByteStreamHandler
+# 
+# Learn more:
+# - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
+# - Function Tools: https://docs.livekit.io/agents/tools/
+` : `
+# Note: This example doesn't include image generation.
+# The Gemini playground supports image generation via the "Nano Banana" toggle.
+# Source code (Python example) available at: https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
+# 
+# To learn how to add custom tools and byte stream communication:
+# - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
+# - Function Tools: https://docs.livekit.io/agents/tools/
+`}
 
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
@@ -123,6 +146,30 @@ export default defineAgent({
     await session.generateReply({
       instructions: 'Greet the user and offer your assistance.',
     });
+
+${pgState.sessionConfig.nanoBananaEnabled ? `
+    // Image generation is enabled in this playground!
+    // To add image generation to your agent, see the full implementation:
+    // https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
+    // 
+    // Key concepts (good homework to deep dive into LiveKit btw!):
+    // 1. Define function tools for the agent to call
+    // 2. Use Google's Gemini image generation API
+    // 3. Use LiveKit's stream_bytes or send_file to send images to the frontend
+    // 4. Receive byte streams on the frontend with registerByteStreamHandler
+    // 
+    // Learn more:
+    // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
+    // - Function Tools: https://docs.livekit.io/agents/tools/
+` : `
+    // Note: This example doesn't include image generation.
+    // The Gemini playground supports image generation via the "Nano Banana" toggle.
+    // Source code (Python example) available at: https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
+    // 
+    // To learn how to add custom tools and byte stream communication:
+    // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
+    // - Function Tools: https://docs.livekit.io/agents/tools/
+`}
   },
 });
 
@@ -169,7 +216,7 @@ cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
                 >
                   LiveKit Agents
                 </a>{" "}
-                to get started with the Gemini Multimodal Live API.
+                to get started with the Gemini Live API.
               </DialogDescription>
             </DialogHeader>
             <div className="flex gap-1 bg-bg2 p-1 rounded-lg sm:mr-10 flex-shrink-0 self-center sm:self-start mx-auto sm:mx-0">

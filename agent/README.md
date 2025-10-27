@@ -11,15 +11,25 @@ This directory contains a LiveKit Agent that can be deployed to LiveKit Cloud us
 
 ### Setup
 
-1. Create a virtual environment:
+1. Install `uv` (if not already installed):
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or with Homebrew
+brew install uv
 ```
 
-2. Install dependencies:
+2. Create a virtual environment and install dependencies:
 ```bash
-pip install -r requirements.txt
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv pip install -r pyproject.toml
+```
+
+Or simply use `uv run` to run commands without activating:
+```bash
+uv run python main.py dev
 ```
 
 3. Create `.env.local` file with your secrets:
@@ -28,11 +38,16 @@ LIVEKIT_URL=your_livekit_url
 LIVEKIT_API_KEY=your_api_key
 LIVEKIT_API_SECRET=your_api_secret
 ```
+To get these secrets, you can use the LiveKit CLI following the instructions below (steps 1-4).
 
 ### Run Locally
 
 ```bash
+# With activated virtualenv
 python main.py dev
+
+# Or directly with uv
+uv run python main.py dev
 ```
 
 ## CI/CD Deployment to LiveKit Cloud
@@ -43,34 +58,38 @@ python main.py dev
 ```bash
 curl -sSL https://get.livekit.io/cli | bash
 ```
+For other platforms (macOS, Windows) - check [LiveKit CLI documentation](https://docs.livekit.io/home/cli/).
 
 2. **Authenticate with LiveKit Cloud**:
 ```bash
 lk cloud auth
 ```
 
-3. **Set up GitHub Secrets and Environment Variables**:
+3. **Get agent ID & run first deployment to LiveKit Cloud:**
+   - Create your agent first & deploy first version: `lk agent create`
+   - The agent ID will be in the generated `livekit.toml` file
+
+4. **Get environment variables from LiveKit**:
+   - Run `lk app env --write` to create `.env.local` with `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, and `LIVEKIT_URL`
+   
+   **Alternative:** Get credentials manually from the dashboard:
+   - Log into [cloud.livekit.io](https://cloud.livekit.io/projects/p_/settings/project)
+   - Go to Settings → API keys to create a new API key/secret pair
+   - Copy your LiveKit URL from Settings → Project
+
+5. **Set up GitHub Secrets and Environment Variables**:
    
    Go to your GitHub repository → Settings → Env → production
    
    **Add the following secrets:**
 
-   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain e.g. agents_c0g1)
+   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain e.g., agents_c0g1) from `livekit.toml`
    - `LIVEKIT_URL`: Your full LiveKit Cloud URL (e.g., `wss://your-project.livekit.cloud`)
-   - `LIVEKIT_API_KEY`: Your LiveKit API key
-   - `LIVEKIT_API_SECRET`: Your LiveKit API secret
-   - `LIVEKIT_AGENT_ID`: Your agent ID (e.g., `CA_PARMnikDQoKU`)
+   - `LIVEKIT_API_KEY`: Your LiveKit API key from `.env.local` generated in step 4
+   - `LIVEKIT_API_SECRET`: Your LiveKit API secret from `.env.local`
+   - `LIVEKIT_AGENT_ID`: Your agent ID (e.g., `CA_PARMnikDQoKU`) from `livekit.toml`
 
-   **To get LiveKit credentials:**
-   - Log into [cloud.livekit.io](https://cloud.livekit.io)
-   - Go to Settings → Keys
-   - Create a new API key/secret pair
-   
-   **To get Agent ID:**
-   - Create your agent locally first: `lk agent create`
-   - The ID will be in the generated `livekit.toml` file
-
-4. **Configure the workflow**:
+6. **Configure the workflow** (optional):
    
    The workflow file is located at `.github/workflows/deploy-agent.yml`
    
@@ -92,7 +111,8 @@ After deployment:
 ```
 agent/
 ├── main.py              # Main agent code
-├── requirements.txt     # Python dependencies
+├── pyproject.toml       # Python project & dependencies (uv)
+├── .python-version      # Python version specification
 ├── Dockerfile          # Docker build configuration
 ├── .dockerignore       # Files to exclude from Docker build
 ├── .env.local          # Local secrets (not in git)

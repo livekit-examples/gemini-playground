@@ -55,7 +55,7 @@ export function ModelSelector({ form, ...props }: ConfigurationFormFieldProps) {
                   <p className="text-fg2">{modelsData[field.value].description}</p>
                 </div>
               ) : (
-                <p>Choose a Gemini multimodal live model</p>
+                <p>Choose a Gemini live API model</p>
               )}
             </HoverCardContent>
           </HoverCard>
