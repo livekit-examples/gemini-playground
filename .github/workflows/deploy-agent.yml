@@ -3,13 +3,10 @@ name: Deploy Agent to LiveKit Cloud
 on:
   push:
     branches:
-      - main
+      - production # We are using production branch for the agent deployment! But you maybe need to change it to main for your own use case.
       - nikita/v2
     paths:
       - 'agent/**'
-      - '!agent/livekit.toml'
-      - '!agent/README.md'
-      - '!agent/**/*.md'
   workflow_dispatch:
     inputs:
       operation:
