@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
+import { playgroundStateHelpers } from "@/lib/playground-state-helpers";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { irBlack as theme } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -19,6 +20,7 @@ export function CodeViewer() {
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState<"python" | "typescript">("python");
   const { pgState } = usePlaygroundState();
+  const fullInstructions = playgroundStateHelpers.getFullInstructions(pgState);
 
   const formatInstructions = (
     instructions: string,
@@ -79,7 +81,7 @@ async def entrypoint(ctx: JobContext):
     await session.start(
         room=ctx.room,
         agent=Agent(
-            instructions="""${formatInstructions(pgState.instructions)}"""
+            instructions="""${formatInstructions(fullInstructions)}"""
         )
     )
 
@@ -125,7 +127,7 @@ export default defineAgent({
     await ctx.connect();
 
     const agent = new voice.Agent({
-      instructions: \`${formatInstructions(pgState.instructions, 'typescript')}\`,
+      instructions: \`${formatInstructions(fullInstructions, 'typescript')}\`,
     });
 
     const session = new voice.AgentSession({

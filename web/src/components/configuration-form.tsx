@@ -11,6 +11,7 @@ import { ModelId } from "@/data/models";
 import { UseFormReturn } from "react-hook-form";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
 import { useConnection } from "@/hooks/use-connection";
+import { playgroundStateHelpers } from "@/lib/playground-state-helpers";
 import {
   useConnectionState,
   useLocalParticipant,
@@ -63,9 +64,10 @@ export function ConfigurationForm() {
     }
 
     const values = pgState.sessionConfig;
+    const fullInstructions = playgroundStateHelpers.getFullInstructions(pgState);
     const attributes: { [key: string]: string | number | boolean } = {
       gemini_api_key: pgState.geminiAPIKey || "",
-      instructions: pgState.instructions,
+      instructions: fullInstructions,
       model: values.model,
       voice: values.voice,
       modalities: values.modalities,

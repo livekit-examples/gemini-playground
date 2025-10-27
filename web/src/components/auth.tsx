@@ -119,6 +119,7 @@ export function AuthDialog({
                       href="https://github.com/livekit/agents"
                       target="_blank"
                       className="underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       LiveKit Agents
                     </Link>
@@ -130,6 +131,7 @@ export function AuthDialog({
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       className="underline text-gemini-blue"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Gemini API key
                     </Link>{" "}
@@ -150,21 +152,29 @@ export function AuthDialog({
                             href="https://aistudio.google.com/app/apikey"
                             target="_blank"
                             className="inline-flex items-center text-gemini-blue underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Gemini API Key
                             <ArrowUpRight className="h-4 w-4 ml-1" />
                           </Link>
                         </FormLabel>
-                        <div className="flex gap-2 w-full">
+                        <div className="flex gap-2 w-full items-center">
                           <FormControl className="w-full">
                             <Input
-                              className="w-full"
+                              className="w-full h-9"
                               placeholder="Gemini API Key"
                               {...field}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  form.handleSubmit(onSubmit)();
+                                }
+                              }}
                             />
                           </FormControl>
                           <Button 
                             type="button"
+                            className="h-9"
                             onClick={(e) => {
                               e.preventDefault();
                               onSubmit(form.getValues());
