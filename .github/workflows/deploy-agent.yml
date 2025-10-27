@@ -41,17 +41,6 @@ jobs:
           OPERATION: deploy
           WORKING_DIRECTORY: agent
 
-      - name: Check Agent Status
-        if: github.event.inputs.operation == 'status' || github.event_name == 'push'
-        uses: livekit/deploy-action@v2.12.1
-        env:
-          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
-          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
-          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
-        with:
-          OPERATION: status
-          WORKING_DIRECTORY: agent
-
       - name: Deployment summary
         if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
         run: |
