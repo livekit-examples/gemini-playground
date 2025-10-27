@@ -163,6 +163,7 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
     // Learn more:
     // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
     // - Function Tools: https://docs.livekit.io/agents/tools/
+    // - Byte Streams: https://docs.livekit.io/home/client/data/byte-streams/#handling-incoming-streams
 ` : `
     // Note: This example doesn't include image generation.
     // The Gemini playground supports image generation via the "Nano Banana" toggle.
@@ -171,6 +172,7 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
     // To learn how to add custom tools and byte stream communication:
     // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
     // - Function Tools: https://docs.livekit.io/agents/tools/
+    // - Byte Streams: https://docs.livekit.io/home/client/data/byte-streams/#handling-incoming-streams
 `}
   },
 });
