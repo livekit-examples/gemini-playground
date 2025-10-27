@@ -11,5 +11,6 @@ dependencies = [
     "python-dotenv",
     "google-genai>=1.43.0",
     "Pillow>=10.0.0",
+    "packaging>=21.0",
 ]
 
