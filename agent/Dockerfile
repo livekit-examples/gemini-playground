@@ -2,6 +2,7 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -14,12 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
-COPY .env.local .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
+# Copy all project files
 COPY . .
+
+# Install dependencies using uv with proper dependency resolution
+RUN uv pip install --system .
 
 CMD ["python", "main.py", "start"]

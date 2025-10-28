@@ -10,24 +10,28 @@ import { VoiceId } from "@/data/voices";
 import { ModelId } from "@/data/models";
 import { UseFormReturn } from "react-hook-form";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
+import { useConnection } from "@/hooks/use-connection";
+import { playgroundStateHelpers } from "@/lib/playground-state-helpers";
 import {
   useConnectionState,
   useLocalParticipant,
   useVoiceAssistant,
 } from "@livekit/components-react";
 import { ConnectionState } from "livekit-client";
-import { Button } from "@/components/ui/button";
 import { defaultSessionConfig } from "@/data/playground-state";
-import { useConnection } from "@/hooks/use-connection";
-import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ModalitiesId } from "@/data/modalities";
+
+// Configuration changes that require full reconnection instead of hot-reload
+const RECONNECT_REQUIRED_FIELDS = ["voice", "nano_banana_enabled"];
+
 export const ConfigurationFormSchema = z.object({
   model: z.nativeEnum(ModelId),
   modalities: z.nativeEnum(ModalitiesId),
   voice: z.nativeEnum(VoiceId),
   temperature: z.number().min(0.6).max(1.2),
   maxOutputTokens: z.number().nullable(),
+  nanoBananaEnabled: z.boolean(),
 });
 
 export interface ConfigurationFormFieldProps {
@@ -37,8 +41,8 @@ export interface ConfigurationFormFieldProps {
 
 export function ConfigurationForm() {
   const { pgState, dispatch } = usePlaygroundState();
+  const { connect, disconnect } = useConnection();
   const connectionState = useConnectionState();
-  const { voice, disconnect, connect } = useConnection();
   const { localParticipant } = useLocalParticipant();
   const form = useForm<z.infer<typeof ConfigurationFormSchema>>({
     resolver: zodResolver(ConfigurationFormSchema),
@@ -47,40 +51,99 @@ export function ConfigurationForm() {
   });
   const formValues = form.watch();
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Ref to track timeout
+  const hasConnectedOnceRef = useRef(false); // Track if we've connected once
+  const isReconnectingRef = useRef(false); // Track if we're currently reconnecting to prevent loops
   const { toast } = useToast();
   const { agent } = useVoiceAssistant();
 
   const updateConfig = useCallback(async () => {
-    const values = pgState.sessionConfig;
-    const attributes: { [key: string]: string } = {
-      gemini_api_key: pgState.geminiAPIKey || "",
-      instructions: pgState.instructions,
-      voice: values.voice,
-      modalities: values.modalities,
-      temperature: values.temperature.toString(),
-      max_output_tokens: values.maxOutputTokens
-        ? values.maxOutputTokens.toString()
-        : "",
-    };
-    // Check if the local participant already has attributes set
-    const hadExistingAttributes =
-      Object.keys(localParticipant.attributes).length > 0;
-
-    // Check if only the voice attribute has changed
-    const onlyVoiceChanged = Object.keys(attributes).every(
-      (key) =>
-        key === "voice" ||
-        attributes[key] === (localParticipant.attributes[key] as string)
-    );
-
-    // If only voice changed, or if there were no existing attributes, don't update or show toast
-    if (onlyVoiceChanged) {
+    // Don't update if we're currently reconnecting to prevent loops
+    if (isReconnectingRef.current) {
+      console.log("Skipping config update - reconnection in progress");
       return;
     }
 
+    const values = pgState.sessionConfig;
+    const fullInstructions = playgroundStateHelpers.getFullInstructions(pgState);
+    const attributes: { [key: string]: string | number | boolean } = {
+      gemini_api_key: pgState.geminiAPIKey || "",
+      instructions: fullInstructions,
+      model: values.model,
+      voice: values.voice,
+      modalities: values.modalities,
+      temperature: values.temperature,
+      max_output_tokens: values.maxOutputTokens || "",
+      nano_banana_enabled: values.nanoBananaEnabled,
+    };
     if (!agent?.identity) {
       return;
     }
+
+    // Skip the very first update right after connection
+    // (config was already sent via token)
+    if (!hasConnectedOnceRef.current) {
+      hasConnectedOnceRef.current = true;
+      return;
+    }
+
+    // Check if any attributes have changed
+    // Convert both to strings for comparison since attributes are stored as strings
+    const hasChanges = Object.keys(attributes).some(
+      (key) => String(attributes[key]) !== String(localParticipant.attributes[key])
+    );
+
+    if (!hasChanges) {
+      console.log("no changes");
+      return;
+    }
+
+    // Check if any critical fields changed that require full reconnection
+    const hasCriticalChanges = RECONNECT_REQUIRED_FIELDS.some(
+      (key) => String(attributes[key]) !== String(localParticipant.attributes[key])
+    );
+
+    //const listOfThingsThatChanged = Object.keys(attributes).filter(key => String(attributes[key]) !== String(localParticipant.attributes[key]));
+    //console.log("listOfThingsThatChanged: ", listOfThingsThatChanged);
+
+    if (hasCriticalChanges) {
+      console.log("Critical config change detected, triggering reconnection...");
+      
+      // Set reconnecting flag to prevent update loops
+      isReconnectingRef.current = true;
+    
+      try {
+        // Trigger full reconnection
+        await disconnect();
+        // Small delay to ensure clean disconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Reset the connection flag so the first update after reconnect is skipped
+        hasConnectedOnceRef.current = false;
+        
+        await connect();
+        
+        // Wait a bit longer for the connection to stabilize and attributes to sync
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        toast({
+          title: "Reconnected",
+          description: "Session reconnected with new settings.",
+          variant: "success",
+        });
+      } catch (e) {
+        toast({
+          title: "Reconnection failed",
+          description: "Failed to reconnect. Please try manually.",
+          variant: "destructive",
+        });
+      } finally {
+        // Always reset the reconnecting flag
+        isReconnectingRef.current = false;
+      }
+      return;
+    }
+
+    console.log("has changes, sending RPC");
 
     try {
       let response = await localParticipant.performRpc({
@@ -92,8 +155,7 @@ export function ConfigurationForm() {
       let responseObj = JSON.parse(response);
       if (responseObj.changed) {
         toast({
-          title: "Configuration Updated",
-          description: "Your changes have been applied successfully.",
+          title: "Configuration updated",
           variant: "success",
         });
       }
@@ -108,9 +170,12 @@ export function ConfigurationForm() {
   }, [
     pgState.sessionConfig,
     pgState.instructions,
+    pgState.geminiAPIKey,
     localParticipant,
     toast,
-    agent,
+    agent?.identity,
+    connect,
+    disconnect,
   ]);
 
   // Function to debounce updates when user stops interacting
@@ -124,6 +189,14 @@ export function ConfigurationForm() {
       updateConfig();
     }, 500); // Adjust delay as needed
   }, [updateConfig]);
+
+  // Reset connection flag when disconnected
+  useEffect(() => {
+    if (connectionState !== ConnectionState.Connected) {
+      hasConnectedOnceRef.current = false;
+      // Don't reset isReconnectingRef here - it's managed by the reconnection flow
+    }
+  }, [connectionState]);
 
   // Propagate form upates from the user
   useEffect(() => {
@@ -147,37 +220,14 @@ export function ConfigurationForm() {
     <Form {...form}>
       <form className="h-full">
         <div className="flex flex-col h-full">
-          <div className="flex-shrink-0 py-4 px-1">
-            <div className="text-xs font-semibold uppercase tracking-widest">
+          <div className="flex-shrink-0 py-4 px-1 border-b border-separator1">
+            <div className="text-xs font-bold uppercase tracking-widest text-fg0">
               Configuration
             </div>
           </div>
-          <div className="flex-grow overflow-y-auto py-4 pt-0">
-            <div className="space-y-4">
+          <div className="flex-grow overflow-y-auto py-4 pt-4">
+            <div className="space-y-5">
               <SessionConfig form={form} />
-
-              {pgState.sessionConfig.voice !== voice &&
-                ConnectionState.Connected === connectionState && (
-                  <div className="flex flex-col">
-                    <div className="text-xs my-2">
-                      Your change to the voice parameter requires a reconnect.
-                    </div>
-                    <div className="flex w-full">
-                      <Button
-                        className="flex-1"
-                        type="button"
-                        variant="primary"
-                        onClick={() => {
-                          disconnect().then(() => {
-                            connect();
-                          });
-                        }}
-                      >
-                        <RotateCcw className="mr-2 h-4 w-4" /> Reconnect Now
-                      </Button>
-                    </div>
-                  </div>
-                )}
             </div>
           </div>
         </div>

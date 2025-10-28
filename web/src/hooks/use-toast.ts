@@ -6,7 +6,7 @@ import * as React from "react";
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
 const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 2000;
 
 type ToasterToast = ToastProps & {
   id: string;
@@ -155,6 +155,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
+      duration: props.duration ?? 2000, // Auto-dismiss after 2 seconds by default
       onOpenChange: (open) => {
         if (!open) dismiss();
       },

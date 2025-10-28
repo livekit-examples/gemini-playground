@@ -44,32 +44,44 @@ export function PresetShare() {
           <span className="ml-2 hidden md:block">Share</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[520px]">
-        <div className="flex flex-col space-y-2 text-center sm:text-left">
-          <h3 className="text-lg font-semibold">Share Preset</h3>
-          <p className="text-sm text-muted-foreground">
+      <PopoverContent align="end" className="w-[520px] p-0">
+        <div className="px-6 py-5 border-b border-separator1">
+          <h3 className="text-lg font-semibold text-fg0">Share Preset</h3>
+          <p className="text-sm text-fg2 mt-2">
             Anyone with this link and their own Gemini API key can try what
             you&apos;ve come up with.
           </p>
         </div>
-        <div className="flex items-center space-x-2 pt-4">
-          <div className="grid flex-1 gap-2">
-            <Label htmlFor="link" className="sr-only">
-              Link
-            </Label>
-            <Input id="link" defaultValue={link} readOnly className="h-9" />
-          </div>
-          <Button type="button" size="sm" className="px-3" onClick={handleCopy}>
-            <Copy className="h-4 w-4" />
-            <span className="text-sm font-semibold ml-1">
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <Label htmlFor="link" className="sr-only">
+                Link
+              </Label>
+              <Input 
+                id="link" 
+                defaultValue={link} 
+                readOnly 
+                className="h-9 font-mono text-xs"
+              />
+            </div>
+            <Button 
+              type="button" 
+              variant={copied ? "secondary" : "primary"}
+              size="sm" 
+              onClick={handleCopy}
+              leftIcon={<Copy />}
+            >
               {copied ? "Copied!" : "Copy"}
-            </span>
-          </Button>
+            </Button>
+          </div>
         </div>
-        <p className="bg-black/5 text-xs rounded-sm py-2 px-2 mt-4 flex gap-2">
-          <LockClosedIcon className="h-3 w-3" />
-          Your Gemini API key will not be shared.
-        </p>
+        <div className="px-6 py-4 bg-bg2 border-t border-separator1 rounded-b-lg">
+          <div className="flex items-center gap-2 text-xs text-fg2">
+            <LockClosedIcon className="h-3 w-3 flex-shrink-0" />
+            <span>Your Gemini API key will not be shared.</span>
+          </div>
+        </div>
       </PopoverContent>
     </Popover>
   );

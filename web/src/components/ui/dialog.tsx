@@ -21,7 +21,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-bg2/70 backdrop-blur-[2px] data-[state=open]:first:animate-in data-[state=open]:first:fade-in-0 data-[state=closed]:first:animate-out data-[state=closed]:first:fade-out-0",
       className,
     )}
     {...props}
@@ -37,24 +37,25 @@ const DialogContent = React.forwardRef<
   }
 >(({ className, children, isModal = false, ...props }, ref) => (
   <DialogPortal>
-    <DialogOverlay onClick={isModal ? (e) => e.preventDefault() : undefined} />
-    <DialogPrimitive.Content
-      ref={ref}
-      onPointerDownOutside={isModal ? (e) => e.preventDefault() : undefined}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 bg-neutral-800 p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg ",
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      {!isModal && (
-        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-neutral-100 data-[state=open]:text-neutral-500 dark:ring-offset-neutral-950 dark:focus:ring-neutral-300 dark:data-[state=open]:bg-neutral-800 dark:data-[state=open]:text-neutral-400">
-          <X className="h-4 w-4" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      )}
-    </DialogPrimitive.Content>
+    <DialogOverlay onClick={isModal ? (e) => e.preventDefault() : undefined}>
+      <DialogPrimitive.Content
+        ref={ref}
+        onPointerDownOutside={isModal ? (e) => e.preventDefault() : undefined}
+        className={cn(
+          "relative z-50 my-8 flex w-full max-w-lg flex-col rounded border border-separator1 bg-bg1 text-fg0 p-6 outline-none drop-shadow-lg duration-200 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=closed]:slide-out-to-top-[48%]",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        {!isModal && (
+          <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-fgAccent1">
+            <X className="h-4 w-4 text-fg3" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Content>
+    </DialogOverlay>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
@@ -94,7 +95,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
+      "text-lg font-semibold leading-none tracking-tight text-fg0",
       className,
     )}
     {...props}
@@ -108,7 +109,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-neutral-500 dark:text-neutral-400", className)}
+    className={cn("text-pretty text-sm text-fg1", className)}
     {...props}
   />
 ));

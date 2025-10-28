@@ -10,6 +10,7 @@ import React, {
 import { PlaygroundState } from "@/data/playground-state";
 import { usePlaygroundState } from "./use-playground-state";
 import { VoiceId } from "@/data/voices";
+import { playgroundStateHelpers } from "@/lib/playground-state-helpers";
 
 export type ConnectFn = () => Promise<void>;
 
@@ -50,7 +51,7 @@ export const ConnectionProvider = ({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(pgState),
+      body: JSON.stringify(playgroundStateHelpers.getStateWithFullInstructions(pgState)),
     });
 
     if (!response.ok) {

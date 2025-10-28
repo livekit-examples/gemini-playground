@@ -4,6 +4,7 @@ import {
   defaultSessionConfig,
 } from "@/data/playground-state";
 import { Preset, defaultPresets } from "@/data/presets";
+import { IMMUTABLE_NANO_BANANA_PROMPT } from "@/data/immutable-prompt";
 
 export const playgroundStateHelpers = {
   getSelectedPreset: (state: PlaygroundState) => {
@@ -97,5 +98,50 @@ export const playgroundStateHelpers = {
       const newUrl = `${window.location.origin}${window.location.pathname}${params ? `?${params}` : ""}`;
       window.history.replaceState({}, "", newUrl);
     }
+  },
+
+  /**
+   * Checks if the immutable nano banana prompt should be used
+   * Returns true if nano banana is enabled AND the current preset is NOT the creative-artist preset
+   */
+  shouldUseImmutablePrompt: (state: PlaygroundState): boolean => {
+    const { sessionConfig, selectedPresetId } = state;
+    return (
+      sessionConfig.nanoBananaEnabled &&
+      selectedPresetId !== "creative-artist"
+    );
+  },
+
+  /**
+   * Gets the full instructions with immutable prompt prepended if needed
+   */
+  getFullInstructions: (state: PlaygroundState): string => {
+    const shouldUseImmutable = playgroundStateHelpers.shouldUseImmutablePrompt(state);
+    
+    if (shouldUseImmutable) {
+      return `${IMMUTABLE_NANO_BANANA_PROMPT}\n\n${state.instructions}`;
+    }
+    
+    return state.instructions;
+  },
+
+  /**
+   * Gets just the immutable prompt if it should be used
+   */
+  getImmutablePrompt: (state: PlaygroundState): string | null => {
+    return playgroundStateHelpers.shouldUseImmutablePrompt(state)
+      ? IMMUTABLE_NANO_BANANA_PROMPT
+      : null;
+  },
+
+  /**
+   * Returns a new state object with full instructions (including additional prompt if needed)
+   */
+  getStateWithFullInstructions: (state: PlaygroundState): PlaygroundState => {
+    const fullInstructions = playgroundStateHelpers.getFullInstructions(state);
+    return {
+      ...state,
+      instructions: fullInstructions,
+    };
   },
 };

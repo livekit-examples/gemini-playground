@@ -15,6 +15,7 @@ import {
   defaultPlaygroundState,
 } from "@/data/playground-state";
 import { playgroundStateHelpers } from "@/lib/playground-state-helpers";
+import { ModelId } from "@/data/models";
 
 import { Preset, defaultPresets } from "@/data/presets";
 
@@ -183,7 +184,27 @@ export const PlaygroundStateProvider = ({
 
     // Load presets from localStorage
     const storedPresets = localStorage.getItem(LS_USER_PRESETS_KEY);
-    const userPresets = storedPresets ? JSON.parse(storedPresets) : [];
+    let userPresets = storedPresets ? JSON.parse(storedPresets) : [];
+
+    // Validate and fix invalid model IDs in stored presets
+    userPresets = userPresets.map((preset: Preset) => {
+      // Check if the preset has an invalid model ID
+      if (!Object.values(ModelId).includes(preset.sessionConfig.model as ModelId)) {
+        return {
+          ...preset,
+          sessionConfig: {
+            ...preset.sessionConfig,
+            model: defaultSessionConfig.model,
+          },
+        };
+      }
+      return preset;
+    });
+
+    // Save cleaned presets back to storage
+    if (userPresets.length > 0) {
+      presetStorageHelper.setStoredPresets(userPresets);
+    }
 
     dispatch({ type: "SET_USER_PRESETS", payload: userPresets });
 

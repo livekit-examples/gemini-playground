@@ -21,12 +21,9 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 
 const getMinMaxForField = (schema: z.ZodNumber) => {
-  const minCheck = schema._def.checks.find((check) => check.kind === "min");
-  const maxCheck = schema._def.checks.find((check) => check.kind === "max");
-
   return {
-    minValue: minCheck ? minCheck.value : undefined,
-    maxValue: maxCheck ? maxCheck.value : undefined,
+    minValue: schema.minValue ?? undefined,
+    maxValue: schema.maxValue ?? undefined,
   };
 };
 
@@ -51,7 +48,7 @@ export function TemperatureSelector({
             <HoverCardTrigger asChild>
               <FormItem className="px-1">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-sm">Temperature</FormLabel>
+                  <FormLabel className="text-sm font-medium text-fg1">Temperature</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -74,7 +71,7 @@ export function TemperatureSelector({
                 </FormControl>
               </FormItem>
             </HoverCardTrigger>
-            <HoverCardContent align="start" className="w-[260px]" side="bottom">
+            <HoverCardContent align="start" className="w-[260px] text-sm" side="right">
               Adjust the randomness of the response. Lowering the temperature
               will make the response more deterministic and repetitive.
             </HoverCardContent>

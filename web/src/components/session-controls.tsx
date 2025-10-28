@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Mic, MicOff } from "lucide-react";
+import { ChevronDown, Mic, MicOff, PhoneOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import {
@@ -40,18 +40,18 @@ export function SessionControls() {
 
   return (
     <div className="flex flex-row gap-2">
-      <div className="flex items-center rounded-md bg-neutral-900 text-secondary-foreground">
+      <div className="flex items-center rounded-md bg-bg2 text-secondary-foreground overflow-hidden">
         <div className="flex items-center gap-2">
           <TrackToggle
             source={Track.Source.Microphone}
-            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 text-neutral-900 hover:!bg-neutral-800/80 hover:!rounded-l-md h-9 shadow-none !px-3 !border-r-[1px] !border-neutral-800`}
+            className={`inline-flex items-center justify-center whitespace-nowrap rounded-l-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 text-foreground hover:!bg-bg3 hover:!rounded-l-md h-9 shadow-none !px-3 !border-r-[1px] !border-separator1`}
             style={{ borderRightStyle: "solid" }}
             showIcon={false}
           >
             {isMuted ? (
-              <MicOff className="text-neutral-500 h-4 w-4" />
+              <MicOff className="text-fg3 h-4 w-4" />
             ) : (
-              <Mic className="text-neutral-500 h-4 w-4" />
+              <Mic className="text-fg3 h-4 w-4" />
             )}
           </TrackToggle>
           <BarVisualizer
@@ -70,9 +70,9 @@ export function SessionControls() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="secondary"
-              className="px-2.5 bg-neutral-900 shadow-none hover:bg-neutral-800/80 rounded-l-none border-l-[1px] border-neutral-800 text-sm font-semibold"
+              className="h-9 px-3 bg-bg2 shadow-none hover:bg-bg3 rounded-l-none rounded-r-md border-l-[1px] border-separator1 text-sm font-semibold"
             >
-              <ChevronDown className="h-4 w-4 text-neutral-500" />
+              <ChevronDown className="h-4 w-4 text-fg3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -114,7 +114,8 @@ export function SessionControls() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <Button variant="destructive" onClick={disconnect}>
+      <Button variant="destructive" onClick={disconnect} className="h-9">
+        <PhoneOff className="h-4 w-4" />
         Disconnect
       </Button>
     </div>

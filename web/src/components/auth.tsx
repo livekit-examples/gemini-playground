@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ArrowUpRight, LockKeyhole } from "lucide-react";
+import Link from "next/link";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -97,7 +98,7 @@ export function AuthDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-md p-0 border-0 rounded-lg overflow-hidden max-h-[90vh] flex flex-col"
+        className="sm:max-w-md p-0 rounded-lg overflow-hidden max-h-[90vh] flex flex-col"
         isModal={true}
       >
         <div className="overflow-y-auto">
@@ -109,29 +110,31 @@ export function AuthDialog({
               >
                 <DialogHeader className="gap-2">
                   <DialogTitle>
-                    Gemini 2.0 Multimodal Live API Playground
+                    Gemini 2.5 Live API Playground
                   </DialogTitle>
                   <DialogDescription>
-                    Try out Google&apos;s new Gemini 2.0 Multimodal Live API
+                    Try out Google&apos;s new Gemini 2.5 Live API
                     right from your browser with this playground built on{" "}
-                    <a
+                    <Link
                       href="https://github.com/livekit/agents"
                       target="_blank"
                       className="underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       LiveKit Agents
-                    </a>
+                    </Link>
                     .
                   </DialogDescription>
                   <DialogDescription>
                     You must have a valid{" "}
-                    <a
+                    <Link
                       href="https://aistudio.google.com/app/apikey"
                       target="_blank"
                       className="underline text-gemini-blue"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Gemini API key
-                    </a>{" "}
+                    </Link>{" "}
                     to connect the playground to your own Gemini platform
                     account.
                   </DialogDescription>
@@ -145,31 +148,47 @@ export function AuthDialog({
                       <div className="flex flex-col gap-2">
                         <FormLabel className="font-semibold text-sm whitespace-nowrap">
                           Enter your{" "}
-                          <a
+                          <Link
                             href="https://aistudio.google.com/app/apikey"
                             target="_blank"
                             className="inline-flex items-center text-gemini-blue underline"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             Gemini API Key
                             <ArrowUpRight className="h-4 w-4 ml-1" />
-                          </a>
+                          </Link>
                         </FormLabel>
-                        <div className="flex gap-2 w-full">
+                        <div className="flex gap-2 w-full items-center">
                           <FormControl className="w-full">
                             <Input
-                              className="w-full"
+                              className="w-full h-9"
                               placeholder="Gemini API Key"
                               {...field}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  form.handleSubmit(onSubmit)();
+                                }
+                              }}
                             />
                           </FormControl>
-                          <Button type="submit">Connect</Button>
+                          <Button 
+                            type="button"
+                            className="h-9"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              onSubmit(form.getValues());
+                            }}
+                          >
+                            Connect
+                          </Button>
                         </div>
                       </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <DialogDescription className="text-xs py-2 flex justify-between items-center">
+                <div className="text-xs text-fg1 py-2 flex justify-between items-center">
                   <div className="flex items-center gap-2 flex-1">
                     <LockKeyhole className="h-3 w-3 flex-shrink-0" />
                     <span className="font-semibold">
@@ -189,7 +208,7 @@ export function AuthDialog({
                       View source on GitHub
                     </a>
                   </div>
-                </DialogDescription>
+                </div>
               </form>
             </Form>
           </div>

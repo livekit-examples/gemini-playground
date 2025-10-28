@@ -1,0 +1,50 @@
+name: Deploy Agent to LiveKit Cloud
+
+on:
+  push:
+    branches:
+      - production # We are using production branch for the agent deployment! But you maybe need to change it to main for your own use case.
+    paths:
+      - 'agent/**'
+      - '.github/**/*.yml'
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        required: true
+        type: choice
+        options:
+          - deploy
+        default: 'deploy'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: ${{ github.workflow }}-agent
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy LiveKit Cloud Agent
+        if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
+        uses: livekit/deploy-action@v2.12.1
+        env:
+          LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
+          LIVEKIT_API_KEY: ${{ secrets.LIVEKIT_API_KEY }}
+          LIVEKIT_API_SECRET: ${{ secrets.LIVEKIT_API_SECRET }}
+          SECRET_LIST: DUMMY_SECRET=not-used
+        with:
+          OPERATION: deploy
+          WORKING_DIRECTORY: agent
+
+      - name: Deployment summary
+        if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
+        run: |
+          echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Working Directory:** agent" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

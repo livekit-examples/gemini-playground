@@ -20,9 +20,16 @@ interface Transcription {
   publication?: TrackPublication;
 }
 
+interface GeneratedImage {
+  prompt: string;
+  imageUrl: string;
+  timestamp: number;
+}
+
 interface AgentContextType {
   displayTranscriptions: Transcription[];
   agent?: RemoteParticipant;
+  generatedImages: GeneratedImage[];
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined);
@@ -38,6 +45,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [displayTranscriptions, setDisplayTranscriptions] = useState<
     Transcription[]
   >([]);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -81,6 +89,48 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       );
     }
   }, [localParticipant, toast]);
+
+  // Register byte stream handler for images
+  useEffect(() => {
+    if (!room || !shouldConnect) return;
+
+    const handleByteStream = async (reader: any, participantInfo: any) => {
+      try {
+        console.log('Byte stream received:', reader.info);
+        
+        // Get the prompt from attributes
+        const prompt = reader.info.attributes?.prompt || 'Generated image';
+        const timestamp = reader.info.timestamp || Date.now();
+        
+        // Read all chunks from the stream
+        const chunks = await reader.readAll();
+        
+        // Create a blob from the chunks
+        const blob = new Blob(chunks, { type: reader.info.mimeType || 'image/jpeg' });
+        const imageUrl = URL.createObjectURL(blob);
+        
+        // Add to generated images
+        setGeneratedImages(prev => [
+          ...prev,
+          {
+            prompt,
+            imageUrl,
+            timestamp
+          }
+        ]);
+        
+        console.log('Image received and processed:', prompt);
+      } catch (error) {
+        console.error('Failed to process byte stream:', error);
+      }
+    };
+
+    room.registerByteStreamHandler('nano_banana_image', handleByteStream);
+
+    return () => {
+      room.unregisterByteStreamHandler('nano_banana_image');
+    };
+  }, [room, shouldConnect]);
 
   useEffect(() => {
     const sorted = Object.values(rawSegments).sort(
@@ -126,11 +176,12 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     if (shouldConnect) {
       setRawSegments({});
       setDisplayTranscriptions([]);
+      setGeneratedImages([]);
     }
   }, [shouldConnect]);
 
   return (
-    <AgentContext.Provider value={{ displayTranscriptions, agent }}>
+    <AgentContext.Provider value={{ displayTranscriptions, agent, generatedImages }}>
       {children}
     </AgentContext.Provider>
   );

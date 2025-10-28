@@ -1,8 +1,6 @@
 import { Metadata } from "next";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
-import { RoomComponent } from "@/components/room-component";
-import LK from "@/components/lk";
-import Gemini from "@/components/gemini";
+import { Chat } from "@/components/chat";
 import Heart from "@/assets/heart.svg";
 import { defaultPresets } from "@/data/presets";
 import { CodeViewer } from "@/components/code-viewer";
@@ -13,20 +11,21 @@ import { PresetShare } from "@/components/preset-share";
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }): Promise<Metadata> {
-  let title = "LiveKit | Gemini Multimodal Playground";
+  let title = "LiveKit | Gemini Live API Playground";
   let description =
-    "Speech-to-speech playground for Google's new Gemini Multimodal Live API. Built on LiveKit Agents.";
+    "Speech-to-speech playground for Google's new Gemini Live API. Built on LiveKit Agents";
 
-  const presetId = searchParams?.preset;
+  const params = await searchParams;
+  const presetId = params?.preset;
   if (presetId) {
     const selectedPreset = defaultPresets.find(
       (preset) => preset.id === presetId
     );
     if (selectedPreset) {
-      title = `Gemini Multimodal Live Playground`;
-      description = `Speak to a "${selectedPreset.name}" in a speech-to-speech playground for Gemini's new Multimodal Live API. Built on LiveKitAgents.`;
+      title = `Gemini Live API Playground`;
+      description = `Speak to a "${selectedPreset.name}" in a speech-to-speech playground for Gemini's new Live API. Built on LiveKitAgents.`;
     }
   }
 
@@ -53,29 +52,26 @@ export async function generateMetadata({
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col h-dvh bg-neutral-900">
-      <header className="flex flex-col md:flex-row flex-shrink-0 gap-3 md:h-12 items-center justify-between px-5 py-8 w-full md:mx-auto">
-        <div className="flex items-center gap-3">
-          <LK />
-          <span className="h-8 border-r border-white/10"></span>
-          <div className="flex gap-2 items-center">
-            <Gemini />
-            <span className="text-[18px] pt-[3px] font-light">
-              Multimodal Live Playground
-            </span>
-          </div>
+    <div className="flex flex-col h-screen bg-bg0 overflow-x-hidden">
+      <header className="flex flex-col md:flex-row flex-shrink-0 gap-3 md:h-16 items-center justify-between px-4 md:px-8 py-4 w-full border-b border-separator1 min-w-0">
+        <div className="flex items-center min-w-0 flex-shrink">
+          <span className="text-lg font-light truncate">
+            Gemini Live API Playground
+          </span>
         </div>
-        <div className="inline-flex flex-row items-center space-x-2">
+        <div className="inline-flex flex-row items-center space-x-2 flex-shrink-0">
           <PresetSelector />
           <PresetSave />
           <PresetShare />
           <CodeViewer />
         </div>
       </header>
-      <main className="flex flex-col flex-grow overflow-hidden p-0 pb-4 lg:pb-0 w-full md:mx-auto">
-        <RoomComponent />
+      <main className="flex flex-col flex-1 min-h-0 min-w-0 overflow-hidden p-4 w-full">
+        <div className="w-full h-full flex flex-col mx-auto rounded-2xl bg-bg1 border border-separator1 min-w-0 overflow-hidden">
+          <Chat />
+        </div>
       </main>
-      <footer className="hidden md:flex md:items-center md:gap-2 md:justify-end font-mono uppercase text-right py-3 px-8 text-xs text-neutral-600 w-full md:mx-auto">
+      <footer className="hidden md:flex md:items-center md:gap-2 md:justify-end font-mono uppercase text-right py-3 px-8 text-xs text-fg3 w-full border-t border-separator1">
         Built with
         <Heart />
         on

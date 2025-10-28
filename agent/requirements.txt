@@ -1,4 +1,0 @@
-livekit
-livekit-agents>=0.12.9,<1
-livekit-plugins-google>=0.10.0,<1
-python-dotenv
