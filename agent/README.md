@@ -83,7 +83,6 @@ lk cloud auth
    
    **Add the following secrets:**
 
-   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain e.g., agents_c0g1) from `livekit.toml`
    - `LIVEKIT_URL`: Your full LiveKit Cloud URL (e.g., `wss://your-project.livekit.cloud`)
    - `LIVEKIT_API_KEY`: Your LiveKit API key from `.env.local` generated in step 4
    - `LIVEKIT_API_SECRET`: Your LiveKit API secret from `.env.local`
