@@ -15,7 +15,6 @@ on:
         type: choice
         options:
           - deploy
-          - status
         default: 'deploy'
 
 jobs:
