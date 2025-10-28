@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - production # We are using production branch for the agent deployment! But you maybe need to change it to main for your own use case.
-      - nikita/v2
     paths:
       - 'agent/**'
       - '.github/**/*.yml'
