@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useConnection } from "@/hooks/use-connection";
-import { Loader2, PhoneCall } from "lucide-react";
+import { Loader2, PhoneCall, Settings } from "lucide-react";
 import { usePlaygroundState } from "@/hooks/use-playground-state";
 import { AuthDialog } from "./auth";
 
@@ -51,24 +51,37 @@ export function ConnectButton() {
 
   return (
     <>
-      <Button
-        onClick={handleConnectionToggle}
-        disabled={connecting || shouldConnect}
-        variant="primary"
-        className="text-sm font-semibold p-2 h-9"
-      >
-        {connecting || shouldConnect ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Connecting
-          </>
-        ) : (
-          <>
-            <PhoneCall className="h-4 w-4 mr-2" />
-            Start a conversation with Gemini
-          </>
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={handleConnectionToggle}
+          disabled={connecting || shouldConnect}
+          variant="primary"
+          className="text-sm font-semibold p-2 h-9"
+        >
+          {connecting || shouldConnect ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Connecting
+            </>
+          ) : (
+            <>
+              <PhoneCall className="h-4 w-4 mr-2" />
+              Start a conversation with Gemini
+            </>
+          )}
+        </Button>
+        {!shouldConnect && !connecting && pgState.geminiAPIKey && (
+          <Button
+            onClick={() => setShowAuthDialog(true)}
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            title="Change API Key"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
         )}
-      </Button>
+      </div>
       <AuthDialog
         open={showAuthDialog}
         onOpenChange={setShowAuthDialog}
