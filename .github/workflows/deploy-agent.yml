@@ -1,12 +1,6 @@
 name: Deploy Agent to LiveKit Cloud
 
 on:
-  push:
-    branches:
-      - production # We are using production branch for the agent deployment! But you maybe need to change it to main for your own use case.
-    paths:
-      - "agent/**"
-      - ".github/**/*.yml"
   workflow_dispatch:
     inputs:
       operation:
@@ -20,7 +14,6 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
     concurrency:
       group: ${{ github.workflow }}-agent
       cancel-in-progress: true
@@ -32,16 +25,16 @@ jobs:
         run: |
           cat > agent/livekit.toml << 'EOF'
           [project]
-            subdomain = "demo-agents-omk31qjj"
+            subdomain = "geminiplayground-cmxxiyax"
 
           [agent]
-            id = "CA_Vwiih8UDHpW6"
+            id = "CA_K5ABztZkb3G4"
           EOF
           echo "✅ Created temporary livekit.toml for deployment"
           cat agent/livekit.toml
 
       - name: Deploy LiveKit Cloud Agent
-        if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
+        if: github.event.inputs.operation == 'deploy'
         uses: livekit/deploy-action@v2.12.1
         env:
           LIVEKIT_URL: ${{ secrets.LIVEKIT_URL }}
@@ -53,7 +46,7 @@ jobs:
           WORKING_DIRECTORY: agent
 
       - name: Deployment summary
-        if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
+        if: github.event.inputs.operation == 'deploy'
         run: |
           echo "## Deployment Complete" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
