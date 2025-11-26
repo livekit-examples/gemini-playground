@@ -65,9 +65,9 @@ For other platforms (macOS, Windows) - check [LiveKit CLI documentation](https:/
 lk cloud auth
 ```
 
-3. **Get agent ID & run first deployment to LiveKit Cloud:**
-   - Create your agent first & deploy first version: `lk agent create`
-   - The agent ID will be in the generated `livekit.toml` file
+3. **Get your agent ID and deploy to LiveKit Cloud:**
+   - Create and deploy your agent for the first time: `lk agent create`
+   - The agent ID will be written to the generated `livekit.toml` file. Make sure to keep this file in the `agent/` directory to enable cloud deployment in CI/CD pipeline.
 
 4. **Get environment variables from LiveKit**:
    - Run `lk app env --write` to create `.env.local` with `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, and `LIVEKIT_URL`
@@ -83,11 +83,9 @@ lk cloud auth
    
    **Add the following secrets:**
 
-   - `LIVEKIT_PROJECT_NAME`: Your LiveKit Cloud project name (subdomain e.g., agents_c0g1) from `livekit.toml`
    - `LIVEKIT_URL`: Your full LiveKit Cloud URL (e.g., `wss://your-project.livekit.cloud`)
    - `LIVEKIT_API_KEY`: Your LiveKit API key from `.env.local` generated in step 4
    - `LIVEKIT_API_SECRET`: Your LiveKit API secret from `.env.local`
-   - `LIVEKIT_AGENT_ID`: Your agent ID (e.g., `CA_PARMnikDQoKU`) from `livekit.toml`
 
 6. **Configure the workflow** (optional):
    
