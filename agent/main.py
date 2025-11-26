@@ -30,6 +30,9 @@ load_dotenv(dotenv_path=".env.local")
 logger = logging.getLogger("gemini-playground")
 logger.setLevel(logging.INFO)
 
+# Suppress OpenTelemetry attribute warnings
+logging.getLogger("opentelemetry.attributes").setLevel(logging.ERROR)
+
 
 @dataclass
 class SessionConfig:
