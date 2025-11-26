@@ -5,17 +5,17 @@ on:
     branches:
       - production # We are using production branch for the agent deployment! But you maybe need to change it to main for your own use case.
     paths:
-      - 'agent/**'
-      - '.github/**/*.yml'
+      - "agent/**"
+      - ".github/**/*.yml"
   workflow_dispatch:
     inputs:
       operation:
-        description: 'Operation to perform'
+        description: "Operation to perform"
         required: true
         type: choice
         options:
           - deploy
-        default: 'deploy'
+        default: "deploy"
 
 jobs:
   deploy:
@@ -27,6 +27,18 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Create temporary livekit.toml
+        run: |
+          cat > agent/livekit.toml << 'EOF'
+          [project]
+            subdomain = "demo-agents-omk31qjj"
+
+          [agent]
+            id = "CA_Vwiih8UDHpW6"
+          EOF
+          echo "✅ Created temporary livekit.toml for deployment"
+          cat agent/livekit.toml
 
       - name: Deploy LiveKit Cloud Agent
         if: github.event_name == 'push' || github.event.inputs.operation == 'deploy'
