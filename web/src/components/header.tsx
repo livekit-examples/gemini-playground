@@ -16,7 +16,7 @@ export function Header() {
                 Live API Playground
               </h2>
               <p className="text-sm text-gray-500">
-                Try Google&apos;s new Gemini 2.5 Live API right from
+                Try Google&apos;s Gemini 3.1 Live API right from
                 your browser.
               </p>
             </div>

@@ -93,7 +93,7 @@ export default function Dashboard() {
           <GitHubLogoIcon className="h-4 w-4" />
           View source on GitHub
         </a>
-        • © 2025 LiveKit
+        • © 2026 LiveKit
       </footer>
     </div>
   );
