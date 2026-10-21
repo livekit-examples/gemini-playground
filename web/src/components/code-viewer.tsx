@@ -61,13 +61,27 @@ export function CodeViewer() {
       .join("\n");
   };
 
-  const pythonCode = `from livekit import agents
-from livekit.agents import Agent, AgentSession, JobContext, WorkerOptions, cli
+  const pythonCode = `from dotenv import load_dotenv
+
+from livekit import agents
+from livekit.agents import AgentServer, AgentSession, Agent
 from livekit.plugins import google
 
-async def entrypoint(ctx: JobContext):
-    await ctx.connect()
+load_dotenv(".env.local")
 
+
+class Assistant(Agent):
+    def __init__(self) -> None:
+        super().__init__(
+            instructions="""${formatInstructions(fullInstructions)}"""
+        )
+
+
+server = AgentServer()
+
+
+@server.rtc_session()
+async def entrypoint(ctx: agents.JobContext):
     session = AgentSession(
         llm=google.realtime.RealtimeModel(
             model="${pgState.sessionConfig.model}",
@@ -80,9 +94,7 @@ async def entrypoint(ctx: JobContext):
 
     await session.start(
         room=ctx.room,
-        agent=Agent(
-            instructions="""${formatInstructions(fullInstructions)}"""
-        )
+        agent=Assistant(),
     )
 
     await session.generate_reply(
@@ -93,13 +105,13 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
 # Image generation is enabled in this playground!
 # To add image generation to your agent, see the full implementation:
 # https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
-# 
+#
 # Key concepts:
 # 1. Define function tools for the agent to call
 # 2. Use Google's Gemini image generation API
 # 3. Use LiveKit's stream_bytes to send images to the frontend
 # 4. Receive byte streams on the frontend with registerByteStreamHandler
-# 
+#
 # Learn more:
 # - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
 # - Function Tools: https://docs.livekit.io/agents/tools/
@@ -107,29 +119,40 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
 # Note: This example doesn't include image generation.
 # The Gemini playground supports image generation via the "Nano Banana" toggle.
 # Source code (Python example) available at: https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
-# 
+#
 # To learn how to add custom tools and byte stream communication:
 # - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
 # - Function Tools: https://docs.livekit.io/agents/tools/
 `}
 
 if __name__ == "__main__":
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+    agents.cli.run_app(server)
 `;
 
-  const typescriptCode = `import { defineAgent, type JobContext, WorkerOptions, cli, voice } from '@livekit/agents';
+  const typescriptCode = `import {
+  type JobContext,
+  ServerOptions,
+  cli,
+  defineAgent,
+  voice,
+} from '@livekit/agents';
 import * as google from '@livekit/agents-plugin-google';
-import { fileURLToPath } from 'node:url';
 import { Modality } from '@google/genai';
+import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
+
+class Assistant extends voice.Agent {
+  constructor() {
+    super({
+      instructions: \`${formatInstructions(fullInstructions, 'typescript')}\`,
+    });
+  }
+}
 
 export default defineAgent({
   entry: async (ctx: JobContext) => {
-    await ctx.connect();
-
-    const agent = new voice.Agent({
-      instructions: \`${formatInstructions(fullInstructions, 'typescript')}\`,
-    });
-
     const session = new voice.AgentSession({
       llm: new google.beta.realtime.RealtimeModel({
         model: '${pgState.sessionConfig.model}',
@@ -141,11 +164,13 @@ export default defineAgent({
     });
 
     await session.start({
-      agent,
+      agent: new Assistant(),
       room: ctx.room,
     });
 
-    await session.generateReply({
+    await ctx.connect();
+
+    session.generateReply({
       instructions: 'Greet the user and offer your assistance.',
     });
 
@@ -153,13 +178,13 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
     // Image generation is enabled in this playground!
     // To add image generation to your agent, see the full implementation:
     // https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
-    // 
+    //
     // Key concepts (good homework to deep dive into LiveKit btw!):
     // 1. Define function tools for the agent to call
     // 2. Use Google's Gemini image generation API
     // 3. Use LiveKit's stream_bytes or send_file to send images to the frontend
     // 4. Receive byte streams on the frontend with registerByteStreamHandler
-    // 
+    //
     // Learn more:
     // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
     // - Function Tools: https://docs.livekit.io/agents/tools/
@@ -168,7 +193,7 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
     // Note: This example doesn't include image generation.
     // The Gemini playground supports image generation via the "Nano Banana" toggle.
     // Source code (Python example) available at: https://github.com/livekit-examples/gemini-playground/blob/main/agent/main.py
-    // 
+    //
     // To learn how to add custom tools and byte stream communication:
     // - Gemini Image Generation: https://ai.google.dev/gemini-api/docs/image-generation
     // - Function Tools: https://docs.livekit.io/agents/tools/
@@ -177,7 +202,7 @@ ${pgState.sessionConfig.nanoBananaEnabled ? `
   },
 });
 
-cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
+cli.runApp(new ServerOptions({ agent: fileURLToPath(import.meta.url) }));
 `;
 
   const currentCode = language === "python" ? pythonCode : typescriptCode;
